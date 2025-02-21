@@ -37,8 +37,8 @@ Write-Host "Done."
 ############################################################################################################################################################
 Write-Host "Setting NVIDIA Profile" 
 # Define URLs
-$zipUrl = "https://github.com/h3kt0rx/fresh-install-win11/raw/refs/heads/main/cfg/nvidiaProfileInspector.zip"
-$configUrl = "https://raw.githubusercontent.com/h3kt0rx/fresh-install-win11/refs/heads/main/cfg/Custom.nip"
+$zipUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/nvidiaProfileInspector.zip"
+$configUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/Custom.nip"
 # Define temporary paths
 $tempDir = "$env:TEMP\nvidiaProfileInspector"
 $zipPath = "$tempDir\nvidiaProfileInspector.zip"
@@ -101,7 +101,7 @@ Write-Host "Running O&O ShutUp"
 $OOSU_filepath = "$ENV:temp\OOSU10.exe"
 $oosu_config = "$ENV:temp\ooshutup10.cfg"
 Invoke-WebRequest -Uri "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -OutFile $OOSU_filepath
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/h3kt0rx/fresh-install-win11/bcd88675cbdc59d3af7cc6fc6b5ca8430840e7ce/cfg/ooshutup10.cfg" -OutFile $oosu_config
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/ooshutup10.cfg" -OutFile $oosu_config
 Write-Host "Applying personal O&O Shutup 10 Policies"
 Start-Process $OOSU_filepath -ArgumentList "$oosu_config /quiet" -Wait
 Write-Host "Done." 
