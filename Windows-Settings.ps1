@@ -171,12 +171,7 @@ Set-ItemProperty -Path $regPath3 -Name "HiberbootEnabled" -Value 0 -Type DWord -
 # Unpark CPU cores
 $cpuCoresRegPath = "HKLM:\SYSTEM\ControlSet001\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583"
 Set-ItemProperty -Path $cpuCoresRegPath -Name "ValueMax" -Value 0 -Type DWord -Force
-# Disable power throttling
-$throttlingRegPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling"
-Set-ItemProperty -Path $throttlingRegPath -Name "PowerThrottlingOff" -Value 1 -Type DWord -Force
-# Optimize system responsiveness
-$systemProfileRegPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile"
-Set-ItemProperty -Path $systemProfileRegPath -Name "SystemResponsiveness" -Value 0 -Type DWord -Force
+
 # hard disk turn off hard disk after 0%
 powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 0012ee47-9041-4b5d-9b77-535fba8b1442 6738e2c4-e8a5-4a42-b16a-e040e769756e 0x00000000
 powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 0012ee47-9041-4b5d-9b77-535fba8b1442 6738e2c4-e8a5-4a42-b16a-e040e769756e 0x00000000
@@ -290,75 +285,6 @@ Write-Host "Done."
 <# Registry #>
 ############################################################################################################################################################
 Write-Host "Running Registry Tweaks" 
-#----------------
-# EASE OF ACCESS
-#----------------
-
-# Disable Narrator settings
-# Setting to prevent audio feedback from the narrator
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Narrator\NoRoam" -Name "DuckAudio" -Value 0
-# Disables the ability to launch Narrator with Win + Enter
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Narrator\NoRoam" -Name "WinEnterLaunchEnabled" -Value 0
-# Disable scripting capabilities for the narrator
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Narrator\NoRoam" -Name "ScriptingEnabled" -Value 0
-# Disable online services integration for the narrator
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Narrator\NoRoam" -Name "OnlineServicesEnabled" -Value 0
-# Disable narrator cursor highlight feature
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Narrator" -Name "NarratorCursorHighlight" -Value 0
-# Disable coupling of narrator cursor with keyboard input
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Narrator" -Name "CoupleNarratorCursorKeyboard" -Value 0
-# Disable Ease of Access settings
-# Disable the self-voice feature in Ease of Access
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Ease of Access" -Name "selfvoice" -Value 0
-# Disable self-scan feature in Ease of Access
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Ease of Access" -Name "selfscan" -Value 0
-# Disable sound feedback on activation
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility" -Name "Sound on Activation" -Value 0
-# Disable warning sounds
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility" -Name "Warning Sounds" -Value 0
-# Set High Contrast settings flags (4194 - disabled)
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\HighContrast" -Name "Flags" -Value 4194
-# Keyboard Response settings
-# Set keyboard response flags (2 - disabled)
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "Flags" -Value 2
-# Disable auto-repeat rate for keyboard
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "AutoRepeatRate" -Value 0
-# Disable auto-repeat delay for keyboard
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\Keyboard Response" -Name "AutoRepeatDelay" -Value 0
-# MouseKeys settings
-# Set flags for MouseKeys (130 - enabled with specific settings)
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\MouseKeys" -Name "Flags" -Value 130
-# Set maximum speed for MouseKeys
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\MouseKeys" -Name "MaximumSpeed" -Value 39
-# Set time to reach maximum speed for MouseKeys
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\MouseKeys" -Name "TimeToMaximumSpeed" -Value 3000
-# StickyKeys settings
-# Set flags for StickyKeys (2 - enabled)
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "Flags" -Value 2
-# ToggleKeys settings
-# Set flags for ToggleKeys (34 - enabled)
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\ToggleKeys" -Name "Flags" -Value 34
-# SoundSentry settings
-# Disable SoundSentry flags
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\SoundSentry" -Name "Flags" -Value 0
-# Disable Flash Text Effects in SoundSentry
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\SoundSentry" -Name "FSTextEffect" -Value 0
-# Disable Text Effects in SoundSentry
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\SoundSentry" -Name "TextEffect" -Value 0
-# Disable Windows Effects in SoundSentry
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\SoundSentry" -Name "WindowsEffect" -Value 0
-# SlateLaunch settings
-# Clear the ATapp setting
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\SlateLaunch" -Name "ATapp" -Value ""
-# Disable automatic launch of Assistive Technology (AT)
-Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\SlateLaunch" -Name "LaunchAT" -Value 0
-
-#------------------
-# CLOCK AND REGION
-#------------------
-
-# Disable notification when the clock changes
-Set-ItemProperty -Path "HKCU:\Control Panel\TimeDate" -Name "DstNotification" -Value 0 
 
 #--------------------------------
 # APPEARANCE AND PERSONALIZATION
@@ -388,8 +314,6 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSyncProviderNotifications" -Value 0 
 # Disable the use of the sharing wizard
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SharingWizardOn" -Value 0 
-# Disable showing the network
-Set-ItemProperty -Path "HKCU:\Software\Classes\CLSID\{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -Name "System.IsPinnedToNameSpaceTree" -Value 0 
 # Disable View by Group in File Explorer
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "GroupView" -Value 0
 
@@ -537,80 +461,6 @@ Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance
 # Disable automatic maintenance to prevent scheduled maintenance tasks
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Value 1 
 
-#---------
-# PRIVACY
-#---------
-
-# Disable account notifications in the Settings app
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\SystemSettings\AccountNotifications" -Name "EnableAccountNotifications" -Value 0 
-# Disable location access for privacy protection
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value" -Value "Deny" 
-# Disable location override setting for user privacy
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CPSS\Store\UserLocationOverridePrivacySetting" -Name "Value" -Value 0 
-# Enable camera access for applications
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam" -Name "Value" -Value "Allow" 
-# Enable microphone access for applications
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone" -Name "Value" -Value "Allow" 
-# Disable voice activation for privacy concerns
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Speech_OneCore\Settings\VoiceActivation\UserPreferenceForAllApps" -Name "AgentActivationEnabled" -Value 0 
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Speech_OneCore\Settings\VoiceActivation\UserPreferenceForAllApps" -Name "AgentActivationLastUsed" -Value 0 
-# Disable notifications from user notification listener
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\userNotificationListener" -Name "Value" -Value "Deny" 
-# Disable access to account information for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\userAccountInformation" -Name "Value" -Value "Deny" 
-# Disable access to contacts for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\contacts" -Name "Value" -Value "Deny" 
-# Disable access to calendar for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\appointments" -Name "Value" -Value "Deny" 
-# Disable access to phone calls for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\phoneCall" -Name "Value" -Value "Deny" 
-# Disable access to call history for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\phoneCallHistory" -Name "Value" -Value "Deny" 
-# Disable access to email for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\email" -Name "Value" -Value "Deny" 
-# Disable access to user tasks for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\userDataTasks" -Name "Value" -Value "Deny" 
-# Disable access to messaging for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\chat" -Name "Value" -Value "Deny" 
-# Disable access to radios for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\radios" -Name "Value" -Value "Deny" 
-# Disable access to Bluetooth sync for privacy
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\bluetoothSync" -Name "Value" -Value "Deny" 
-# Disable background apps to save resources
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" -Name "GlobalUserDisabled" -Value 1 
-# Disable access to app diagnostics for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\appDiagnostics" -Name "Value" -Value "Deny" 
-# Disable access to documents for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\documentsLibrary" -Name "Value" -Value "Deny" 
-# Disable access to downloads folder for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\downloadsFolder" -Name "Value" -Value "Deny" 
-# Disable access to music library for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\musicLibrary" -Name "Value" -Value "Deny" 
-# Disable access to pictures library for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\picturesLibrary" -Name "Value" -Value "Deny" 
-# Disable access to videos library for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\videosLibrary" -Name "Value" -Value "Deny" 
-# Disable access to file system for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\broadFileSystemAccess" -Name "Value" -Value "Deny" 
-# Disable screenshot borders for a cleaner interface
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\graphicsCaptureWithoutBorder" -Name "Value" -Value "Deny" 
-# Allow programmatic access to screenshots while restricting other methods
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\graphicsCaptureProgrammatic" -Name "Value" -Value "Allow" 
-# Disable access to language list for locally relevant content
-Set-ItemProperty -Path "HKCU:\Control Panel\International\User Profile" -Name "HttpAcceptLanguageOptOut" -Value 1 
-# Disable tracking of app launches to improve start and search results
-Set-ItemProperty -Path "HKCU:\Software\Policies\Microsoft\Windows\EdgeUI" -Name "DisableMFUTracking" -Value 1 
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EdgeUI" -Name "DisableMFUTracking" -Value 1 
-# Disable personal inking and typing dictionary for privacy
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitInkCollection" -Value 1 
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitTextCollection" -Value 1 
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\InputPersonalization\TrainedDataStore" -Name "HarvestContacts" -Value 0 
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Personalization\Settings" -Name "AcceptedPrivacyPolicy" -Value 0 
-# Set feedback frequency to never
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Siuf\Rules" -Name "NumberOfSIUFInPeriod" -Value 0 
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Siuf\Rules" -Name "PeriodInNanoSeconds" -Value -1 
-# Disable storing activity history on this device for privacy
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "PublishUserActivities" -Value 0 
 
 #--------
 # SEARCH
@@ -625,28 +475,6 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSe
 # Disable cloud content search for Microsoft accounts
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings" -Name "IsMSACloudSearchEnabled" -Value 0 
 
-#----------------
-# EASE OF ACCESS
-#----------------
-
-# Disable magnifier settings to prevent following caret, mouse, and focus
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\ScreenMagnifier" -Name "FollowCaret" -Value 0 
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\ScreenMagnifier" -Name "FollowNarrator" -Value 0 
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\ScreenMagnifier" -Name "FollowMouse" -Value 0 
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\ScreenMagnifier" -Name "FollowFocus" -Value 0 
-# Disable narrator settings to prevent notifications and echoing of characters and words
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Narrator" -Name "IntonationPause" -Value 0 
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Narrator" -Name "ReadHints" -Value 0 
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Narrator" -Name "ErrorNotificationType" -Value 0 
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Narrator" -Name "EchoChars" -Value 0 
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Narrator" -Name "EchoWords" -Value 0 
-# Disable auto-start and minimize type for the narrator home
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Narrator\NarratorHome" -Name "MinimizeType" -Value 0 
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Narrator\NarratorHome" -Name "AutoStart" -Value 0 
-# Disable echo toggle keys for narrator
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Narrator\NoRoam" -Name "EchoToggleKeys" -Value 0 
-# Disable the use of the Print Screen key for opening screen capture
-Set-ItemProperty -Path "HKCU:\Control Panel\Keyboard" -Name "PrintScreenKeyForSnippingEnabled" -Value 0 
 
 #--------
 # GAMING
