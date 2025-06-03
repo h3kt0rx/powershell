@@ -61,38 +61,15 @@ Write-Host "Done."
 ############################################################################################################################################################
 <# Script to Disable Core Isolation and Enable Game Mode #>
 ############################################################################################################################################################
-Write-Host "Enabling Game Mode and Disable Core Isolation" 
-# Function to Enable Game Mode
-function Enable-GameMode {
-    $gameModePath = "HKCU:\SOFTWARE\Microsoft\GameBar"
-    
-    # Check if the path exists, create it if it doesn't
-    if (-not (Test-Path $gameModePath)) {
-        New-Item -Path $gameModePath -PropertyType DWord -Force
-    }
-    
-    # Set or create properties
-    Set-ItemProperty -Path $gameModePath -Name "AutoGameModeEnabled" -Value 1 -Force -ErrorAction SilentlyContinue
-    Set-ItemProperty -Path $gameModePath -Name "UseGameMode" -Value 1 -Force -ErrorAction SilentlyContinue
-}
+Write-Host "Enabling Game Mode and Disabling Core Isolation"
 
-# Function to Disable Core Isolation Memory Integrity
-function Disable-CoreIsolation {
-    $memoryIntegrityPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceGuard"
-    
-    # Create the registry key if it doesn't exist
-    if (-not (Test-Path $memoryIntegrityPath)) {
-        New-Item -Path $memoryIntegrityPath -Force
-    }
+# Enable Game Mode using reg add
+reg add "HKCU\SOFTWARE\Microsoft\GameBar" /v AutoGameModeEnabled /t REG_DWORD /d 1 /f
+reg add "HKCU\SOFTWARE\Microsoft\GameBar" /v UseGameMode /t REG_DWORD /d 1 /f
 
-    # Set Memory Integrity to disabled (via the registry property "EnableVirtualizationBasedSecurity")
-    Set-ItemProperty -Path $memoryIntegrityPath -Name "EnableVirtualizationBasedSecurity" -Value 0 -ErrorAction SilentlyContinue
-}
+# Disable Core Isolation Memory Integrity using reg add
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 0 /f
 
-
-# Execute Optimization Functions
-Disable-CoreIsolation
-Enable-GameMode
 Write-Host "Done."
 ############################################################################################################################################################
 <# Run O&O ShutUp #>
