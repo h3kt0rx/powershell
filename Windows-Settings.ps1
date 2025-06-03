@@ -38,7 +38,7 @@ Write-Host "Done."
 Write-Host "Setting NVIDIA Profile" 
 # Define URLs
 $zipUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/nvidiaProfileInspector.zip"
-$configUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/Custom.nip"
+$configUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/custom.nip"
 # Define temporary paths
 $tempDir = "$env:TEMP\nvidiaProfileInspector"
 $zipPath = "$tempDir\nvidiaProfileInspector.zip"
@@ -50,9 +50,9 @@ Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath | Out-Null
 # Extract the ZIP file and suppress output
 Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force | Out-Null
 # Download the configuration file and suppress output
-Invoke-WebRequest -Uri $configUrl -OutFile "$extractPath\Custom.nip" | Out-Null
+Invoke-WebRequest -Uri $configUrl -OutFile "$extractPath\custom.nip" | Out-Null
 # Run the command to import the profile silently
-$process = Start-Process -FilePath $extractPath\nvidiaProfileInspector.exe -ArgumentList "-silentImport `"$extractPath\Custom.nip`"" -PassThru
+$process = Start-Process -FilePath $extractPath\nvidiaProfileInspector.exe -ArgumentList "-silentImport `"$extractPath\custom.nip`"" -PassThru
 # Wait for the process to exit
 $process.WaitForExit()
 # Clean up
