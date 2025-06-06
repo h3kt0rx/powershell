@@ -86,22 +86,50 @@ Write-Host "Done."
 <# Remove Gamebar #>
 ############################################################################################################################################################
 Write-Host "Removing Gamebar" 
-# Define registry paths and values
-$values = @{
-    "HKCU:\System\GameConfigStore" = "GameDVR_Enabled"
-    "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" = "AppCaptureEnabled"
-}
-
-foreach ($path in $values.Keys) {
-    $name = $values[$path]
-    if (-not (Test-Path "$path\$name")) { New-Item -Path $path -Force | Out-Null }
-    Set-ItemProperty -Path $path -Name $name -Value 0 -Type DWord | Out-Null
-}
+# disable gamebar regedit
+reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d "0" /f | Out-Null
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d "0" /f | Out-Null
+# disable open xbox game bar using game controller regedit
+reg add "HKCU\Software\Microsoft\GameBar" /v "UseNexusForGameBarEnabled" /t REG_DWORD /d "0" /f | Out-Null
+# disable gameinput service regedit
+reg add "HKLM\SYSTEM\ControlSet001\Services\GameInputSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# disable gamedvr and broadcast user service regedit
+reg add "HKLM\SYSTEM\ControlSet001\Services\BcastDVRUserService" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# disable xbox accessory management service regedit
+reg add "HKLM\SYSTEM\ControlSet001\Services\XboxGipSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# disable xbox live auth manager service regedit
+reg add "HKLM\SYSTEM\ControlSet001\Services\XblAuthManager" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# disable xbox live game save service regedit
+reg add "HKLM\SYSTEM\ControlSet001\Services\XblGameSave" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# disable xbox live networking service regedit
+reg add "HKLM\SYSTEM\ControlSet001\Services\XboxNetApiSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# disable ms-gamebar notifications with xbox controller plugged in regedit
+Write-Host "Disabling Game Bar Notifications Triggered by Xbox Controller"
+# ms-gamebar
+reg add "HKCR\ms-gamebar" /ve /d "URL:ms-gamebar" /f
+reg add "HKCR\ms-gamebar" /v "URL Protocol" /t REG_SZ /d "" /f
+reg add "HKCR\ms-gamebar" /v "NoOpenWith" /t REG_SZ /d "" /f
+reg add "HKCR\ms-gamebar\shell\open\command" /ve /d "\"%SystemRoot%\\System32\\systray.exe\"" /f
+# ms-gamebarservices
+reg add "HKCR\ms-gamebarservices" /ve /d "URL:ms-gamebarservices" /f
+reg add "HKCR\ms-gamebarservices" /v "URL Protocol" /t REG_SZ /d "" /f
+reg add "HKCR\ms-gamebarservices" /v "NoOpenWith" /t REG_SZ /d "" /f
+reg add "HKCR\ms-gamebarservices\shell\open\command" /ve /d "\"%SystemRoot%\\System32\\systray.exe\"" /f
+# ms-gamingoverlay
+reg add "HKCR\ms-gamingoverlay" /ve /d "URL:ms-gamingoverlay" /f
+reg add "HKCR\ms-gamingoverlay" /v "URL Protocol" /t REG_SZ /d "" /f
+reg add "HKCR\ms-gamingoverlay" /v "NoOpenWith" /t REG_SZ /d "" /f
+reg add "HKCR\ms-gamingoverlay\shell\open\command" /ve /d "\"%SystemRoot%\\System32\\systray.exe\"" /f
 # stop gamebar running
 Stop-Process -Force -Name GameBar -ErrorAction SilentlyContinue | Out-Null
-# uninstall gamebar
+# uninstall gamebar & xbox apps
+Get-AppxPackage -allusers *Microsoft.GamingApp* | Remove-AppxPackage
+Get-AppxPackage -allusers *Microsoft.Xbox.TCUI* | Remove-AppxPackage
+Get-AppxPackage -allusers *Microsoft.XboxApp* | Remove-AppxPackage
 Get-AppxPackage -allusers *Microsoft.XboxGameOverlay* | Remove-AppxPackage
 Get-AppxPackage -allusers *Microsoft.XboxGamingOverlay* | Remove-AppxPackage
+Get-AppxPackage -allusers *Microsoft.XboxIdentityProvider* | Remove-AppxPackage
+Get-AppxPackage -allusers *Microsoft.XboxSpeechToTextOverlay* | Remove-AppxPackage
 Write-Host "Done." 
 ############################################################################################################################################################
 <# Monitor Optimizations #>
@@ -114,41 +142,46 @@ Write-Host "Done."
 ############################################################################################################################################################
 <# Powerplan #>
 ############################################################################################################################################################
-Write-Host "Setting Powerplan" 
-# Duplicate the ultimate power plan
-$sourcePlan = "e9a42b02-d5df-448d-aa00-03f14749eb61"
-$targetPlan = "99999999-9999-9999-9999-999999999999"
-cmd /c "powercfg /duplicatescheme $sourcePlan $targetPlan >nul 2>&1"
-# Set the ultimate power plan as active
-cmd /c "powercfg /SETACTIVE $targetPlan >nul 2>&1"
-# Get the currently active power scheme
-$activePlan = powercfg /getactivescheme | Select-String -Pattern "GUID: ([\w-]+)" | ForEach-Object { $_.Matches.Groups[1].Value }
-# Retrieve all power plans
-$powerPlans = powercfg /list | Select-String -Pattern "GUID: ([\w-]+)" | ForEach-Object { $_.Matches.Groups[1].Value }
-# Delete all power plans except the active one
-foreach ($plan in $powerPlans) {
-    if ($plan -ne $activePlan) {
-        powercfg -delete $plan
-    }
+# import ultimate power plan
+cmd /c "powercfg /duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 99999999-9999-9999-9999-999999999999 >nul 2>&1"
+# set ultimate power plan active
+cmd /c "powercfg /SETACTIVE 99999999-9999-9999-9999-999999999999 >nul 2>&1"
+# get all powerplans
+$output = powercfg /L
+$powerPlans = @()
+foreach ($line in $output) {
+# extract guid manually to avoid lang issues
+if ($line -match ':') {
+$parse = $line -split ':'
+$index = $parse[1].Trim().indexof('(')
+$guid = $parse[1].Trim().Substring(0, $index)
+$powerPlans += $guid
 }
-# Disable hibernate
-powercfg /hibernate off
-# Disable hibernate settings in the registry
-$regPath1 = "HKLM:\SYSTEM\CurrentControlSet\Control\Power"
-Set-ItemProperty -Path $regPath1 -Name "HibernateEnabled" -Value 0 -Type DWord -Force
-Set-ItemProperty -Path $regPath1 -Name "HibernateEnabledDefault" -Value 0 -Type DWord -Force
-# Disable lock option in the registry
-$regPath2 = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\FlyoutMenuSettings"
-Set-ItemProperty -Path $regPath2 -Name "ShowLockOption" -Value 0 -Type DWord -Force
-# Disable sleep option in the registry
-Set-ItemProperty -Path $regPath2 -Name "ShowSleepOption" -Value 0 -Type DWord -Force
-# Disable fast boot
-$regPath3 = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power"
-Set-ItemProperty -Path $regPath3 -Name "HiberbootEnabled" -Value 0 -Type DWord -Force
-# Unpark CPU cores
-$cpuCoresRegPath = "HKLM:\SYSTEM\ControlSet001\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583"
-Set-ItemProperty -Path $cpuCoresRegPath -Name "ValueMax" -Value 0 -Type DWord -Force
+}
+# delete all powerplans
+foreach ($plan in $powerPlans) {
+cmd /c "powercfg /delete $plan" | Out-Null
+}
 
+# disable hibernate
+powercfg /hibernate off
+cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Control\Power`" /v `"HibernateEnabled`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Control\Power`" /v `"HibernateEnabledDefault`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+# disable lock
+cmd /c "reg add `"HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FlyoutMenuSettings`" /v `"ShowLockOption`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+# disable sleep
+cmd /c "reg add `"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FlyoutMenuSettings`" /v `"ShowSleepOption`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+# disable fast boot
+cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power`" /v `"HiberbootEnabled`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+# unpark cpu cores
+cmd /c "reg add `"HKLM\SYSTEM\ControlSet001\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583`" /v `"ValueMax`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+# disable power throttling
+cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling`" /v `"PowerThrottlingOff`" /t REG_DWORD /d `"1`" /f >nul 2>&1"
+# unhide hub selective suspend timeout
+cmd /c "reg add `"HKLM\System\ControlSet001\Control\Power\PowerSettings\2a737441-1930-4402-8d77-b2bebba308a3\0853a681-27c8-4100-a2fd-82013e970683`" /v `"Attributes`" /t REG_DWORD /d `"2`" /f >nul 2>&1"
+# unhide usb 3 link power management
+cmd /c "reg add `"HKLM\System\ControlSet001\Control\Power\PowerSettings\2a737441-1930-4402-8d77-b2bebba308a3\d4e98f31-5ffe-4ce1-be31-1b38b384c009`" /v `"Attributes`" /t REG_DWORD /d `"2`" /f >nul 2>&1"
+# MODIFY DESKTOP & LAPTOP SETTINGS
 # hard disk turn off hard disk after 0%
 powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 0012ee47-9041-4b5d-9b77-535fba8b1442 6738e2c4-e8a5-4a42-b16a-e040e769756e 0x00000000
 powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 0012ee47-9041-4b5d-9b77-535fba8b1442 6738e2c4-e8a5-4a42-b16a-e040e769756e 0x00000000
@@ -171,9 +204,16 @@ powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41e
 # allow wake timers disable
 powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41ed-83f4-97be242c8f20 bd3b718a-0680-4d9d-8ab2-e1d2b4ac806d 000
 powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41ed-83f4-97be242c8f20 bd3b718a-0680-4d9d-8ab2-e1d2b4ac806d 000
-# usb settings usb selective suspend setting disabled
+# usb settings
+# hub selective suspend timeout 0
+powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 0853a681-27c8-4100-a2fd-82013e970683 0x00000000
+powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 0853a681-27c8-4100-a2fd-82013e970683 0x00000000
+# usb selective suspend setting disabled
 powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 000
 powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 000
+# usb 3 link power management - off
+powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 d4e98f31-5ffe-4ce1-be31-1b38b384c009 000
+powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 d4e98f31-5ffe-4ce1-be31-1b38b384c009 000
 # power buttons and lid start menu power button shut down
 powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 4f971e89-eebd-4455-a8de-9e59040e7347 a7066653-8d6c-40a8-910e-a1f54b84c7e5 002
 powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 4f971e89-eebd-4455-a8de-9e59040e7347 a7066653-8d6c-40a8-910e-a1f54b84c7e5 002
@@ -210,22 +250,26 @@ powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 9596fb26-9850-41f
 powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 9596fb26-9850-41fd-ac3e-f7c3c00afd4b 34c7b99f-9a6d-4b3c-8dc7-b6693b78cef4 000
 powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 9596fb26-9850-41fd-ac3e-f7c3c00afd4b 34c7b99f-9a6d-4b3c-8dc7-b6693b78cef4 000
 # MODIFY LAPTOP SETTINGS
-# Intel(R) graphics settings: maximum performance (AC)
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 44f3beca-a7c0-460e-9df2-bb8b99e0cba6 3619c3f2-afb2-4afc-b0e9-e7fef372de36 002 2>&1 > $null
-# Intel(R) graphics settings: maximum performance (DC)
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 44f3beca-a7c0-460e-9df2-bb8b99e0cba6 3619c3f2-afb2-4afc-b0e9-e7fef372de36 002 2>&1 > $null
-# AMD power slider overlay: best performance (AC)
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 c763b4ec-0e50-4b6b-9bed-2b92a6ee884e 7ec1751b-60ed-4588-afb5-9819d3d77d90 003 2>&1 > $null
-# AMD power slider overlay: best performance (DC)
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 c763b4ec-0e50-4b6b-9bed-2b92a6ee884e 7ec1751b-60ed-4588-afb5-9819d3d77d90 003 2>&1 > $null
-# ATI graphics power settings: maximize performance (AC)
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 f693fb01-e858-4f00-b20f-f30e12ac06d6 191f65b5-d45c-4a4f-8aae-1ab8bfd980e6 001 2>&1 > $null
-# ATI graphics power settings: maximize performance (DC)
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 f693fb01-e858-4f00-b20f-f30e12ac06d6 191f65b5-d45c-4a4f-8aae-1ab8bfd980e6 001 2>&1 > $null
-# Switchable dynamic graphics global settings: maximize performance (AC)
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e276e160-7cb0-43c6-b20b-73f5dce39954 a1662ab2-9d34-4e53-ba8b-2639b9e20857 003 2>&1 > $null
-# Switchable dynamic graphics global settings: maximize performance (DC)
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e276e160-7cb0-43c6-b20b-73f5dce39954 a1662ab2-9d34-4e53-ba8b-2639b9e20857 003 2>&1 > $null
+# intel(r) graphics settings intel(r) graphics power plan maximum performance
+powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 44f3beca-a7c0-460e-9df2-bb8b99e0cba6 3619c3f2-afb2-4afc-b0e9-e7fef372de36 002
+
+powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 44f3beca-a7c0-460e-9df2-bb8b99e0cba6 3619c3f2-afb2-4afc-b0e9-e7fef372de36 002
+
+# amd power slider overlay best performance
+powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 c763b4ec-0e50-4b6b-9bed-2b92a6ee884e 7ec1751b-60ed-4588-afb5-9819d3d77d90 003
+
+powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 c763b4ec-0e50-4b6b-9bed-2b92a6ee884e 7ec1751b-60ed-4588-afb5-9819d3d77d90 003
+
+# ati graphics power settings ati powerplay settings maximize performance
+powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 f693fb01-e858-4f00-b20f-f30e12ac06d6 191f65b5-d45c-4a4f-8aae-1ab8bfd980e6 001
+
+powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 f693fb01-e858-4f00-b20f-f30e12ac06d6 191f65b5-d45c-4a4f-8aae-1ab8bfd980e6 001
+
+# switchable dynamic graphics global settings maximize performance
+powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e276e160-7cb0-43c6-b20b-73f5dce39954 a1662ab2-9d34-4e53-ba8b-2639b9e20857 003
+
+powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e276e160-7cb0-43c6-b20b-73f5dce39954 a1662ab2-9d34-4e53-ba8b-2639b9e20857 003
+
 # battery
 # critical battery notification off
 powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f 5dbb7c9f-38e9-40d2-9749-4f8a0e9f640f 000
@@ -252,11 +296,17 @@ powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f1
 # low screen brightness when using battery saver disable
 powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 de830923-a562-41af-a086-e3a2c6bad2da 13d09884-f74e-474a-a852-b6bde8ad03a8 0x00000064
 powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 de830923-a562-41af-a086-e3a2c6bad2da 13d09884-f74e-474a-a852-b6bde8ad03a8 0x00000064
+
 # immersive control panel
 # turn battery saver on automatically at never
 powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 de830923-a562-41af-a086-e3a2c6bad2da e69653ca-cf7f-4f05-aa73-cb833fa90ad4 0x00000000
+
 powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 de830923-a562-41af-a086-e3a2c6bad2da e69653ca-cf7f-4f05-aa73-cb833fa90ad4 0x00000000
-Write-Host "Done." 
+
+Write-Host "OLED monitor users: Set 'Turn off the display' to '5 minutes' to prevent burn-in." -ForegroundColor Red
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+
+Write-Host "Restart to apply . . ."
 
 ############################################################################################################################################################
 <# Registry #>
@@ -267,191 +317,32 @@ Write-Host "Running Registry Tweaks"
 # APPEARANCE AND PERSONALIZATION
 #--------------------------------
 
-# Open File Explorer to "This PC"
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Value 1 
+# Open File Explorer to “This PC”
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "LaunchTo" /t REG_DWORD /d 1 /f
 # Hide frequent folders in Quick Access
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -Name "ShowFrequent" -Value 0 
-# Show file name extensions
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Value 0 
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer" /v "ShowFrequent" /t REG_DWORD /d 0 /f
+# Show file-name extensions
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f
 # Disable search history
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SearchSettings" -Name "IsDeviceSearchHistoryEnabled" -Value 0 
-# Disable showing files from office.com
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -Name "ShowCloudFilesInQuickAccess" -Value 0 
-# Disable display of file size information in folder tips
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "FolderContentsInfoTip" -Value 0 
-# Enable display of full path in the title bar
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState" -Name "FullPath" -Value 1 
-# Disable pop-up descriptions for folders and desktop items
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowInfoTip" -Value 0 
-# Disable preview handlers in the preview pane
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowPreviewHandlers" -Value 0 
-# Disable status bar display
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowStatusBar" -Value 0 
-# Disable sync provider notifications
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSyncProviderNotifications" -Value 0 
-# Disable the use of the sharing wizard
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "SharingWizardOn" -Value 0 
-# Disable View by Group in File Explorer
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "GroupView" -Value 0
-
-
-#--------------------
-# HARDWARE AND SOUND
-#--------------------
-
-# Disable lock option in the flyout menu
-Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\FlyoutMenuSettings" -Name "ShowLockOption" -Value 0 
-# Disable sleep option in the flyout menu
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FlyoutMenuSettings" -Name "ShowSleepOption" -Value 0 
-# Sound communications do nothing (user ducking preference)
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Multimedia\Audio" -Name "UserDuckingPreference" -Value 3 
-# Disable startup sound
-Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\BootAnimation" -Name "DisableStartupSound" -Value 1 
-Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\EditionOverrides" -Name "UserSetting_DisableStartupSound" -Value 1 
-# Set the default sound scheme to None
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes" -Name "(Default)" -Value ".None"
-# Set the default notification sound for the .Default app
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\.Default\.Current" -Name "(Default)" -Value ""
-# Set the default sound for CriticalBatteryAlarm
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\CriticalBatteryAlarm\.Current" -Name "(Default)" -Value ""
-# Set the default sound for DeviceConnect
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\DeviceConnect\.Current" -Name "(Default)" -Value ""
-# Set the default sound for DeviceDisconnect
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\DeviceDisconnect\.Current" -Name "(Default)" -Value ""
-# Set the default sound for DeviceFail
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\DeviceFail\.Current" -Name "(Default)" -Value ""
-# Set the default sound for FaxBeep
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\FaxBeep\.Current" -Name "(Default)" -Value ""
-# Set the default sound for LowBatteryAlarm
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\LowBatteryAlarm\.Current" -Name "(Default)" -Value ""
-# Set the default sound for MailBeep
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\MailBeep\.Current" -Name "(Default)" -Value ""
-# Set the default sound for MessageNudge
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\MessageNudge\.Current" -Name "(Default)" -Value ""
-# Set the default sound for Notification.Default
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\Notification.Default\.Current" -Name "(Default)" -Value ""
-# Set the default sound for Notification.IM
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\Notification.IM\.Current" -Name "(Default)" -Value ""
-# Set the default sound for Notification.Mail
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\Notification.Mail\.Current" -Name "(Default)" -Value ""
-# Set the default sound for Notification.Proximity
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\Notification.Proximity\.Current" -Name "(Default)" -Value ""
-# Set the default sound for Notification.Reminder
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\Notification.Reminder\.Current" -Name "(Default)" -Value ""
-# Set the default sound for Notification.SMS
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\Notification.SMS\.Current" -Name "(Default)" -Value ""
-# Set the default sound for ProximityConnection
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\ProximityConnection\.Current" -Name "(Default)" -Value ""
-# Set the default sound for SystemAsterisk
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\SystemAsterisk\.Current" -Name "(Default)" -Value ""
-# Set the default sound for SystemExclamation
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\SystemExclamation\.Current" -Name "(Default)" -Value ""
-# Set the default sound for SystemHand
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\SystemHand\.Current" -Name "(Default)" -Value ""
-# Set the default sound for SystemNotification
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\SystemNotification\.Current" -Name "(Default)" -Value ""
-# Set the default sound for WindowsUAC
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\.Default\WindowsUAC\.Current" -Name "(Default)" -Value ""
-# Set the default sound for DisNumbersSound in sapisvr
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\sapisvr\DisNumbersSound\.current" -Name "(Default)" -Value ""
-# Set the default sound for HubOffSound in sapisvr
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\sapisvr\HubOffSound\.current" -Name "(Default)" -Value ""
-# Set the default sound for HubOnSound in sapisvr
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\sapisvr\HubOnSound\.current" -Name "(Default)" -Value ""
-# Set the default sound for HubSleepSound in sapisvr
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\sapisvr\HubSleepSound\.current" -Name "(Default)" -Value ""
-# Set the default sound for MisrecoSound in sapisvr
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\sapisvr\MisrecoSound\.current" -Name "(Default)" -Value ""
-# Set the default sound for PanelSound in sapisvr
-Set-ItemProperty -Path "HKCU:\AppEvents\Schemes\Apps\sapisvr\PanelSound\.current" -Name "(Default)" -Value ""
-# Disable autoplay for removable media to prevent automatic actions
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" -Name "DisableAutoplay" -Value 1 
-# Disable enhanced pointer precision to use a standard mouse speed
-Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseSpeed" -Value "0" 
-Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold1" -Value "0" 
-Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold2" -Value "0" 
-# Set mouse pointer scheme to default (none), effectively removing custom pointers
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "AppStarting" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "Arrow" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "ContactVisualization" -Value 0 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "Crosshair" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "GestureVisualization" -Value 0 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "Hand" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "Help" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "IBeam" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "No" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "NWPen" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "Scheme Source" -Value 0 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "SizeAll" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "SizeNESW" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "SizeNS" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "SizeNWSE" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "SizeWE" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "UpArrow" -Value (0x00, 0x00) 
-Set-ItemProperty -Path "HKCU:\Control Panel\Cursors" -Name "Wait" -Value (0x00, 0x00) 
-
-
-#---------------------
-# SYSTEM AND SECURITY
-#---------------------
-
-# Set visual effects appearance options to custom for better performance
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" -Name "VisualFXSetting" -Value 3 
-# Disable various animations for a smoother user experience
-# This includes: 
-# - Animate controls and elements inside windows
-# - Fade or slide menus into view
-# - Fade or slide tooltips into view
-# - Fade out menu items after clicking
-# - Show shadows under mouse pointer
-# - Show shadows under windows
-# - Slide open combo boxes
-# - Smooth-scroll list boxes
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "UserPreferencesMask" -Value (0x90, 0x12, 0x03, 0x80, 0x10, 0x00, 0x00, 0x00) 
-# Disable window animations when minimizing and maximizing
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop\WindowMetrics" -Name "MinAnimate" -Value "0" 
-# Disable animations in the taskbar for better performance
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAnimations" -Value 0 
-# Disable Aero Peek functionality to prevent showing desktop thumbnails
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "EnableAeroPeek" -Value 0 
-# Disable saving taskbar thumbnail previews to conserve resources
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "AlwaysHibernateThumbnails" -Value 0 
-# Enable showing thumbnails instead of icons in Explorer
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "IconsOnly" -Value 0 
-# Disable translucent selection rectangle for better visibility
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ListviewAlphaSelect" -Value 0 
-# Disable showing window contents while dragging for a cleaner interface
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "DragFullWindows" -Value "0" 
-# Enable smooth edges for screen fonts to improve text clarity
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "FontSmoothing" -Value "2" 
-# Disable drop shadows for icon labels on the desktop for a simpler look
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ListviewShadow" -Value 0 
-# Adjust system settings for best performance of programs
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" -Name "Win32PrioritySeparation" -Value 38 
-# Disable remote assistance to restrict external help access
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance" -Name "fAllowToGetHelp" -Value 0 
-
-#---------------
-# TROUBLESHOOTING
-#---------------
-
-# Disable automatic maintenance to prevent scheduled maintenance tasks
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance" -Name "MaintenanceDisabled" -Value 1 
-
-
-#--------
-# SEARCH
-#--------
-
-# Disable dynamic search box highlights for a cleaner search experience
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings" -Name "IsDynamicSearchBoxEnabled" -Value 0 
-# Disable safe search to allow all search results
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\SearchSettings" -Name "SafeSearchMode" -Value 0 
-# Disable cloud content search for work or school accounts
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings" -Name "IsAADCloudSearchEnabled" -Value 0 
-# Disable cloud content search for Microsoft accounts
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings" -Name "IsMSACloudSearchEnabled" -Value 0 
-
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings" /v "IsDeviceSearchHistoryEnabled" /t REG_DWORD /d 0 /f
+# Disable files from Office.com in Quick Access
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer" /v "ShowCloudFilesInQuickAccess" /t REG_DWORD /d 0 /f
+# Disable file-size info in folder tips
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "FolderContentsInfoTip" /t REG_DWORD /d 0 /f
+# Show full path in the title bar
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState" /v "FullPath" /t REG_DWORD /d 1 /f
+# Disable pop-up descriptions (InfoTips)
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowInfoTip" /t REG_DWORD /d 0 /f
+# Disable preview handlers in Preview Pane
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowPreviewHandlers" /t REG_DWORD /d 0 /f
+# Disable status bar
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowStatusBar" /t REG_DWORD /d 0 /f
+# Disable sync-provider notifications
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowSyncProviderNotifications" /t REG_DWORD /d 0 /f
+# Disable the Sharing Wizard
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "SharingWizardOn" /t REG_DWORD /d 0 /f
+# Disable “Group by” view in File Explorer
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "GroupView" /t REG_DWORD /d 0 /f
 
 #--------
 # GAMING
@@ -526,247 +417,198 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR"
 # Set microphone gain
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "MicrophoneGain" -Value 4294967296
 
-#-----------------
-# TIME & LANGUAGE 
-#-----------------
-
-# Disable the voice typing microphone button
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\input\Settings" -Name "IsVoiceTypingKeyEnabled" -Value 0
-# Disable automatic capitalization of the first letter of each sentence
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\TabletTip\1.7" -Name "EnableAutoShiftEngage" -Value 0
-# Disable audio feedback for key sounds while typing
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\TabletTip\1.7" -Name "EnableKeyAudioFeedback" -Value 0
-# Disable period addition after double-tapping the spacebar
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\TabletTip\1.7" -Name "EnableDoubleTapSpace" -Value 0
-# Disable typing insights feature
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\input\Settings" -Name "InsightsEnabled" -Value 0
-
-#----------
-# ACCOUNTS
-#----------
-
-# Disable the use of sign-in info after a restart
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "DisableAutomaticRestartSignOn" -Value 1
-
-#------
-# APPS
-#------
-
-# Disable automatic updates for maps
-Set-ItemProperty -Path "HKLM:\SYSTEM\Maps" -Name "AutoUpdateEnabled" -Value 0
-# Disable automatic archiving of apps
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Appx" -Name "AllowAutomaticAppArchiving" -Value 0
 
 #-----------------
 # PERSONALIZATION
 #-----------------
 
-# Define the registry paths and values to remove
-$registryPaths = @(
-    "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer",  # Path for user-specific Explorer policies
-    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer",  # Path for current user Explorer settings
-    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"   # Path for local machine Explorer settings
-)
-
-# Define the registry values that we want to remove
-$valuesToRemove = @(
-    "ShowOrHideMostUsedApps",  # Controls the visibility of the most used apps on the Start menu
-    "NoStartMenuMFUprogramsList",  # Disables the Most Frequently Used programs list on the Start menu
-    "NoInstrumentation"  # Disables telemetry and usage tracking for the Start menu
-)
-
-# Loop through each registry path
-foreach ($path in $registryPaths) {
-    # Loop through each value to remove
-    foreach ($value in $valuesToRemove) {
-        # Check if the registry value exists before attempting to remove it
-        if (Test-Path "$path\$value") {
-            # Remove the specified registry value from the path
-            Remove-ItemProperty -Path $path -Name $value -ErrorAction SilentlyContinue | Out-Null
-        }
-    }
-}
+# Remove specific registry values (converted from Remove-ItemProperty)
+reg delete "HKCU\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v "ShowOrHideMostUsedApps" /f
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoStartMenuMFUprogramsList" /f
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoInstrumentation" /f
 # Set a solid color as the background
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "Wallpaper" -Value ""
+reg add "HKCU\Control Panel\Desktop" /v "Wallpaper" /t REG_SZ /d "" /f
 # Set wallpaper type to solid color
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Wallpapers" -Name "BackgroundType" -Value 1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Wallpapers" /v "BackgroundType" /t REG_DWORD /d 1 /f
 # Enable dark theme for apps and system
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "SystemUsesLightTheme" /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f
 # Set accent colors
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent" -Name "StartColorMenu" -Value 0xff3d3f41
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent" -Name "AccentColorMenu" -Value 0xff484a4c
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent" -Name "AccentPalette" -Value 0xDFDEDC00A6A5A100686562004C4A4800413F3D0027252400100D0D00107C1000
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent" /v "StartColorMenu" /t REG_DWORD /d 0xff3d3f41 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent" /v "AccentColorMenu" /t REG_DWORD /d 0xff484a4c /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent" /v "AccentPalette" /t REG_BINARY /d DFDEDC00A6A5A100686562004C4A4800413F3D0027252400100D0D00107C1000 /f
 # Enable window colorization
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "EnableWindowColorization" -Value 1
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "AccentColor" -Value 0xff484a4c
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "ColorizationColor" -Value 0xc44c4a48
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\DWM" -Name "ColorizationAfterglow" -Value 0xc44c4a48
+reg add "HKCU\Software\Microsoft\Windows\DWM" /v "EnableWindowColorization" /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Microsoft\Windows\DWM" /v "AccentColor" /t REG_DWORD /d 0xff484a4c /f
+reg add "HKCU\Software\Microsoft\Windows\DWM" /v "ColorizationColor" /t REG_DWORD /d 0xc44c4a48 /f
+reg add "HKCU\Software\Microsoft\Windows\DWM" /v "ColorizationAfterglow" /t REG_DWORD /d 0xc44c4a48 /f
 # Disable transparency effects
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "EnableTransparency" -Value 0
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "EnableTransparency" /t REG_DWORD /d 0 /f
 # Always hide most used apps in the Start menu
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "ShowOrHideMostUsedApps" -Value 2
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v "ShowOrHideMostUsedApps" /t REG_DWORD /d 2 /f
 # Enable more pinned apps personalization in Start
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_Layout" -Value 1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_Layout" /t REG_DWORD /d 1 /f
 # Disable recently added apps in Start
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "HideRecentlyAddedApps" -Value 1
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "HideRecentlyAddedApps" -Value 1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v "HideRecentlyAddedApps" /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "HideRecentlyAddedApps" /t REG_DWORD /d 1 /f
 # Disable account-related notifications
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_AccountNotifications" -Value 0
-# Disable showing recently opened items in Start, jump lists, and File Explorer
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_TrackDocs" -Value 0
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_AccountNotifications" /t REG_DWORD /d 0 /f
+# Disable showing recently opened items
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_TrackDocs" /t REG_DWORD /d 0 /f
 # Align taskbar to the left
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value 1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarAl" /t REG_DWORD /d 1 /f
 # Remove Chat from taskbar
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarMn" -Value 0
-# Remove Task View from taskbar
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f
+# Remove Task View
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowTaskViewButton" /t REG_DWORD /d 0 /f
 # Remove Search from taskbar
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Value 0
-# Remove Windows Widgets from taskbar
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Dsh" -Name "AllowNewsAndInterests" -Value 0
-# Remove Copilot from taskbar
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowCopilotButton" -Value 0
-# Remove Meet Now from taskbar
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "HideSCAMeetNow" -Value 1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchboxTaskbarMode" /t REG_DWORD /d 0 /f
+# Remove Widgets
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Dsh" /v "AllowNewsAndInterests" /t REG_DWORD /d 0 /f
+# Remove Copilot
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowCopilotButton" /t REG_DWORD /d 0 /f
+# Remove Meet Now
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "HideSCAMeetNow" /t REG_DWORD /d 1 /f
 # Remove Action Center
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name "DisableNotificationCenter" -Value 0
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v "DisableNotificationCenter" /t REG_DWORD /d 0 /f
 # Remove News and Interests
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" -Name "EnableFeeds" -Value 0
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" /v "EnableFeeds" /t REG_DWORD /d 0 /f
 # Show all taskbar icons
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer" -Name "EnableAutoTray" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer" /v "EnableAutoTray" /t REG_DWORD /d 0 /f
 # Disable dynamic lighting on devices
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Lighting" -Name "AmbientLightingEnabled" -Value 0
-# Disable control of lighting by foreground apps
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Lighting" -Name "ControlledByForegroundApp" -Value 0
-# Disable matching Windows accent color for lighting
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Lighting" -Name "UseSystemAccentColor" -Value 0
+reg add "HKCU\Software\Microsoft\Lighting" /v "AmbientLightingEnabled" /t REG_DWORD /d 0 /f
+# Disable foreground app lighting control
+reg add "HKCU\Software\Microsoft\Lighting" /v "ControlledByForegroundApp" /t REG_DWORD /d 0 /f
+# Disable matching accent color for lighting
+reg add "HKCU\Software\Microsoft\Lighting" /v "UseSystemAccentColor" /t REG_DWORD /d 0 /f
 # Disable showing key background
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\TabletTip\1.7" -Name "IsKeyBackgroundEnabled" -Value 0
-# Disable recommendations for tips, shortcuts, new apps, and more
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_IrisRecommendations" -Value 0
-# Disable sharing any window from the taskbar
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarSn" -Value 0
-
+reg add "HKCU\Software\Microsoft\TabletTip\1.7" /v "IsKeyBackgroundEnabled" /t REG_DWORD /d 0 /f
+# Disable Start recommendations
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_IrisRecommendations" /t REG_DWORD /d 0 /f
+# Disable window sharing from taskbar
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarSn" /t REG_DWORD /d 0 /f
 
 #--------
 # SYSTEM
 #--------
 
 # Set 100% DPI scaling
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "LogPixels" -Value 96
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "Win8DpiScaling" -Value 1
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\DWM" -Name "UseDpiScaling" -Value 0
+reg add "HKCU\Control Panel\Desktop" /v "LogPixels" /t REG_DWORD /d 96 /f
+reg add "HKCU\Control Panel\Desktop" /v "Win8DpiScaling" /t REG_DWORD /d 1 /f
+reg add "HKCU\SOFTWARE\Microsoft\Windows\DWM" /v "UseDpiScaling" /t REG_DWORD /d 0 /f
 # Disable fix scaling for apps
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "EnablePerProcessSystemDPI" -Value 0
+reg add "HKCU\Control Panel\Desktop" /v "EnablePerProcessSystemDPI" /t REG_DWORD /d 0 /f
 # Turn on hardware-accelerated GPU scheduling
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "HwSchMode" -Value 2
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" /v "HwSchMode" /t REG_DWORD /d 2 /f
 # Disable notifications
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications" -Name "ToastEnabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.SecurityAndMaintenance" -Name "Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel" -Name "Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.StartupApp" -Name "Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338389Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\UserProfileEngagement" -Name "ScoobeSystemSettingEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\PushNotifications" /v "ToastEnabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.SecurityAndMaintenance" /v "Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel" /v "Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings\Windows.SystemToast.StartupApp" /v "Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-338389Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\UserProfileEngagement" /v "ScoobeSystemSettingEnabled" /t REG_DWORD /d 0 /f
 
 #----------
 # UWP APPS
 #----------
 
 # Disable Windows Input Experience preload
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\input" -Name "IsInputAppPreloadEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\input" /v "IsInputAppPreloadEnabled" /t REG_DWORD /d 0 /f
 # Disable DSH prelaunch
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Dsh" -Name "IsPrelaunchEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Dsh" /v "IsPrelaunchEnabled" /t REG_DWORD /d 0 /f
 # Disable web search in Start menu
-Set-ItemProperty -Path "HKCU:\Software\Policies\Microsoft\Windows\Explorer" -Name "DisableSearchBoxSuggestions" -Value 1
+reg add "HKCU\Software\Policies\Microsoft\Windows\Explorer" /v "DisableSearchBoxSuggestions" /t REG_DWORD /d 1 /f
 # Disable Widgets
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\NewsAndInterests\AllowNewsAndInterests" -Name "value" -Value 0
+reg add "HKLM\SOFTWARE\Microsoft\PolicyManager\default\NewsAndInterests\AllowNewsAndInterests" /v "value" /t REG_DWORD /d 0 /f
 
 #--------
 # NVIDIA
 #--------
 
 # Disable NVIDIA tray icon
-Set-ItemProperty -Path "HKCU:\Software\NVIDIA Corporation\NvTray" -Name "StartOnLogin" -Value 0
+reg add "HKCU\Software\NVIDIA Corporation\NvTray" /v "StartOnLogin" /t REG_DWORD /d 0 /f
 # Enable old NVIDIA sharpening
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\nvlddmkm\FTS" -Name "EnableGR535" -Value 0
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm\FTS" /v "EnableGR535" /t REG_DWORD /d 0 /f
 
 #----------
 # GRAPHICS
 #----------
 
-# Define the registry path and the value name
-$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\Dwm"
-# Enable MPO (Multi Plane Overlay)
-$valueName = "OverlayTestMode"
-# Check if the registry key exists
-if (Test-Path $registryPath) {
-    # Remove the OverlayTestMode value
-    Remove-ItemProperty -Path $registryPath -Name $valueName -ErrorAction SilentlyContinue | Out-Null
-}
-
 # Configure games scheduling for performance
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "Affinity" -Value 0
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "Background Only" -Value "False"
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "Clock Rate" -Value 10000
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "GPU Priority" -Value 8
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "Priority" -Value 6
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "Scheduling Category" -Value "High"
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" -Name "SFIO Priority" -Value "High"
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Affinity" /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Background Only" /t REG_SZ /d "False" /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Clock Rate" /t REG_DWORD /d 10000 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "GPU Priority" /t REG_DWORD /d 8 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Priority" /t REG_DWORD /d 6 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Scheduling Category" /t REG_SZ /d "High" /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "SFIO Priority" /t REG_SZ /d "High" /f
 
 #-------
 # POWER
 #-------
 
 # Unpark CPU cores
-Set-ItemProperty -Path "HKLM:\SYSTEM\ControlSet001\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583" -Name "ValueMax" -Value 0
+reg add "HKLM\SYSTEM\ControlSet001\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583" /v "ValueMax" /t REG_DWORD /d 0 /f
 # Configure network throttling & system responsiveness
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "NetworkThrottlingIndex" -Value 0xffffffff
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" -Name "SystemResponsiveness" -Value 0
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "NetworkThrottlingIndex" /t REG_DWORD /d 4294967295 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d 0 /f
 # Disable hibernate
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "HibernateEnabled" -Value 0
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "HibernateEnabledDefault" -Value 0
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Power" /v "HibernateEnabled" /t REG_DWORD /d 0 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Power" /v "HibernateEnabledDefault" /t REG_DWORD /d 0 /f
 # Disable fast boot
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power" -Name "HiberbootEnabled" -Value 0
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power" /v "HiberbootEnabled" /t REG_DWORD /d 0 /f
 # Fix timer resolution
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" -Name "GlobalTimerResolutionRequests" -Value 1
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" /v "GlobalTimerResolutionRequests" /t REG_DWORD /d 1 /f
 
 #-----------------------------------
 # DISABLE ADVERTISING & PROMOTIONAL
 #-----------------------------------
 
 # Disable content delivery
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "ContentDeliveryAllowed" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "ContentDeliveryAllowed" /t REG_DWORD /d 0 /f
 # Disable feature management
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "FeatureManagementEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "FeatureManagementEnabled" /t REG_DWORD /d 0 /f
 # Disable OEM pre-installed apps
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "OemPreInstalledAppsEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "OemPreInstalledAppsEnabled" /t REG_DWORD /d 0 /f
 # Disable pre-installed apps
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEnabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEverEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "PreInstalledAppsEnabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "PreInstalledAppsEverEnabled" /t REG_DWORD /d 0 /f
 # Disable rotating lock screen
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenEnabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenOverlayEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "RotatingLockScreenEnabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "RotatingLockScreenOverlayEnabled" /t REG_DWORD /d 0 /f
 # Disable silent installed apps
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SilentInstalledAppsEnabled" /t REG_DWORD /d 0 /f
 # Disable slideshow on lock screen
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SlideshowEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SlideshowEnabled" /t REG_DWORD /d 0 /f
 # Disable soft landing for apps
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SoftLandingEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SoftLandingEnabled" /t REG_DWORD /d 0 /f
 # Disable subscribed content
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-310093Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-314563Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338388Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338389Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338393Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353694Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353696Enabled" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353698Enabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-310093Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-314563Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-338388Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-338389Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-338393Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-353694Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-353696Enabled" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContent-353698Enabled" /t REG_DWORD /d 0 /f
 # Disable general subscribed content
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContentEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SubscribedContentEnabled" /t REG_DWORD /d 0 /f
 # Disable system pane suggestions
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SystemPaneSuggestionsEnabled" /t REG_DWORD /d 0 /f
+
+#---------------------------
+# FASTER SHUTDOWN TWEAKS
+#---------------------------
+
+# Force hung apps to close faster
+reg add "HKCU\Control Panel\Desktop" /v "AutoEndTasks" /t REG_SZ /d "1" /f
+# Set hung app timeout
+reg add "HKCU\Control Panel\Desktop" /v "HungAppTimeout" /t REG_SZ /d "2000" /f
+# Set wait-to-kill time for user apps
+reg add "HKCU\Control Panel\Desktop" /v "WaitToKillAppTimeout" /t REG_SZ /d "2000" /f
+# Set wait-to-kill time for services
+reg add "HKLM\SYSTEM\CurrentControlSet\Control" /v "WaitToKillServiceTimeout" /t REG_SZ /d "2000" /f
 
 #-------
 # OTHER
@@ -1060,28 +902,27 @@ Get-WindowsPackage -Online | Where PackageName -like *QuickAssist* | Remove-Wind
 $installPersonalApps = Read-Host "Do you want to install personal applications before running? (Y/N)"
 
 # If the user responds with Y or y, proceed with the installation of personal applications
-if ($installPersonalApps -eq 'Y' -or $installPersonalApps -eq 'y') {
-    Write-Output "Installing Chocolatey"
-    choco install chocolatey-core.extension -y
+# if ($installPersonalApps -eq 'Y' -or $installPersonalApps -eq 'y') {
+#     Write-Output "Installing Chocolatey"
+#     choco install chocolatey-core.extension -y
 
-    Write-Output "Installing Personal Applications"
-    choco install discord.install -y
-    choco install notepadplusplus.install -y
-    choco install peazip.install -y
-    choco install vlc.install -y
-    choco install steam -y
-    choco install ddu -y
-    choco install tightvnc -y
-    choco install rustdesk -y
-} else {
-    Write-Output "Skipping Personal Applications installation."
-}
+#     Write-Output "Installing Personal Applications"
+#     choco install discord.install -y
+#     choco install notepadplusplus.install -y
+#     choco install peazip.install -y
+#     choco install vlc.install -y
+#     choco install steam -y
+#     choco install ddu -y
+#     choco install tightvnc -y
+#     choco install rustdesk -y
+# } else {
+#     Write-Output "Skipping Personal Applications installation."
+# }
 
 #Write-Output "Running Spotify Install Script"
 #iex "& { $(iwr -useb 'https://raw.githubusercontent.com/SpotX-Official/spotx-official.github.io/main/run.ps1') } -new_theme"
 
-#nvcleaninstall
-#syncthing
+
 #dolby atmos
 #Peace GUI
 #fiio
