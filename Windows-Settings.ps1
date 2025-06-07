@@ -610,34 +610,27 @@ if ($installDirectX -match '^[Yy]$') {
 ############################################################################################################################################################
 <# Run Titus Script #>
 ############################################################################################################################################################
-# Prompt to run first command
-# $answer1 = Read-Host "Do you want to run CTT WinUtil automated with Personal Config? [Y/N]"
-# if ($answer1 -match '^[Yy]') {
-#     Write-Host "Running CTT Automated w/Personal Config in new PowerShell window..." -ForegroundColor Cyan
-#     Start-Process powershell -ArgumentList @(
-#         '-NoProfile'
-#         '-Command'
-#         "iwr -useb 'https://christitus.com/windev' -Config 'https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json' -Run"
-#     ) -WindowStyle Normal
-#     Write-Host "Command launched." -ForegroundColor Green
-# } else {
-#     Write-Host "CTT Automation Skipped." -ForegroundColor Cyan
-# }
+# PowerShell script to prompt before running command
+$command = 'iex "& { $(irm https://christitus.com/windev) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"'
+$choice = Read-Host "Do you want to run CTT WinUtil automated with Personal Config? [Y/N]"
 
-# $answer2 = Read-Host "Do you want to run CTT WinUtil Normally? [Y/N]"
-# if ($answer2 -match '^[Yy]') {
-#     Write-Host "Running CTT WinUtil in new PowerShell window..." -ForegroundColor Cyan
-#     Start-Process powershell -ArgumentList @(
-#         '-NoProfile'
-#         '-Command'
-#         "iwr -useb 'https://christitus.com/windev' | iex"
-#     ) -WindowStyle Normal
-#     Write-Host "Command launched." -ForegroundColor Green
-# } else {
-#     Write-Host "CTT WinUtil Skipped." -ForegroundColor Cyan
-# }
+if ($choice -eq 'y' -or $choice -eq 'Y' -or $choice -eq 'yes' -or $choice -eq 'Yes') {
+    Write-Host "Executing..." -ForegroundColor Green
+    Invoke-Expression $command
+} else {
+    Write-Host "CTT WinUtil Automated Skipped." -ForegroundColor Red
+}
+# PowerShell script to prompt before running command
+$command2 = "iwr -useb 'https://christitus.com/windev' | iex"
+$choice2 = Read-Host "Do you want to run CTT WinUtil Normally? [Y/N]"
 
-#iex "& { $(irm https://christitus.com/win) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"
+if ($choice2 -eq 'y' -or $choice2 -eq 'Y' -or $choice2 -eq 'yes' -or $choice2 -eq 'Yes') {
+    Write-Host "Executing..." -ForegroundColor Green
+    Invoke-Expression $command2
+} else {
+    Write-Host "CTT WinUtil Skipped." -ForegroundColor Red
+}
+#iex "& { $(irm https://christitus.com/windev) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"
 ############################################################################################################################################################
 # Personal Programs
 ############################################################################################################################################################
