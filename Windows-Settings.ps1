@@ -610,25 +610,31 @@ if ($installDirectX -match '^[Yy]$') {
 ############################################################################################################################################################
 <# Run Titus Script #>
 ############################################################################################################################################################
-# PowerShell script to prompt before running command
-$command = 'iex "& { $(irm https://christitus.com/win) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"'
-$choice = Read-Host "Do you want to run CTT WinUtil automated with Personal Config? [Y/N]"
-
-if ($choice -eq 'y' -or $choice -eq 'Y' -or $choice -eq 'yes' -or $choice -eq 'Yes') {
-    Write-Host "Executing..." -ForegroundColor Green
-    Invoke-Expression $command
-} else {
-    Write-Host "CTT WinUtil Automated Skipped." -ForegroundColor Red
-}
-# PowerShell script to prompt before running command
+# PowerShell script to prompt before running commands
+$command1 = 'iex \"& { $(irm https://christitus.com/win) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run\"'
 $command2 = "iwr -useb 'https://christitus.com/win' | iex"
-$choice2 = Read-Host "Do you want to run CTT WinUtil Normally? [Y/N]"
 
-if ($choice2 -eq 'y' -or $choice2 -eq 'Y' -or $choice2 -eq 'yes' -or $choice2 -eq 'Yes') {
-    Write-Host "Executing..." -ForegroundColor Green
-    Invoke-Expression $command2
-} else {
-    Write-Host "CTT WinUtil Skipped." -ForegroundColor Red
+Write-Host "Available commands for CTT WinUtil:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "1. Automated Custom Config" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "2. Standard WinUtil" -ForegroundColor Cyan
+Write-Host ""
+
+$choice = Read-Host "Which command do you want to run? (1, 2, or N to cancel)"
+
+switch ($choice) {
+    {$_ -in '1'} {
+        Write-Host "Opening new PowerShell window to execute command 1..." -ForegroundColor Green
+        Start-Process powershell -ArgumentList "-NoExit", "-Command", $command1
+    }
+    {$_ -in '2'} {
+        Write-Host "Opening new PowerShell window to execute command 2..." -ForegroundColor Green
+        Start-Process powershell -ArgumentList "-NoExit", "-Command", $command2
+    }
+    default {
+        Write-Host "Operation cancelled." -ForegroundColor Red
+    }
 }
 #iex "& { $(irm https://christitus.com/windev) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"
 ############################################################################################################################################################
