@@ -611,7 +611,7 @@ if ($installDirectX -match '^[Yy]$') {
 <# Run Titus Script #>
 ############################################################################################################################################################
 # PowerShell script to prompt before running command
-$command = 'iex "& { $(irm https://christitus.com/windev) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"'
+$command = 'iex "& { $(irm https://christitus.com/win) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"'
 $choice = Read-Host "Do you want to run CTT WinUtil automated with Personal Config? [Y/N]"
 
 if ($choice -eq 'y' -or $choice -eq 'Y' -or $choice -eq 'yes' -or $choice -eq 'Yes') {
@@ -621,7 +621,7 @@ if ($choice -eq 'y' -or $choice -eq 'Y' -or $choice -eq 'yes' -or $choice -eq 'Y
     Write-Host "CTT WinUtil Automated Skipped." -ForegroundColor Red
 }
 # PowerShell script to prompt before running command
-$command2 = "iwr -useb 'https://christitus.com/windev' | iex"
+$command2 = "iwr -useb 'https://christitus.com/win' | iex"
 $choice2 = Read-Host "Do you want to run CTT WinUtil Normally? [Y/N]"
 
 if ($choice2 -eq 'y' -or $choice2 -eq 'Y' -or $choice2 -eq 'yes' -or $choice2 -eq 'Yes') {
