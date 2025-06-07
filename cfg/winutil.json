@@ -1,85 +1,84 @@
 {
   "WPFInstall": [
-    "WPFInstalltightvnc",
-    "WPFInstall7zip",
-    "WPFInstallddu",
-    "WPFInstallsteam",
-    "WPFInstallrustdesk",
-    "WPFInstallEqualizerAPO",
-    "WPFInstallvlc",
     "WPFInstallnotepadplus",
+    "WPFInstallEqualizerAPO",
     "WPFInstalldiscord",
-    "WPFInstallchrome"
+    "WPFInstallvlc",
+    "WPFInstall7zip",
+    "WPFInstallchrome",
+    "WPFInstallrustdesk",
+    "WPFInstallsteam",
+    "WPFInstalltightvnc",
+    "WPFInstallddu"
   ],
   "Install": [
     {
-      "winget": "GlavSoft.TightVNC",
-      "choco": "TightVNC"
-    },
-    {
-      "winget": "7zip.7zip",
-      "choco": "7zip"
-    },
-    {
-      "winget": "Wagnardsoft.DisplayDriverUninstaller",
-      "choco": "ddu"
-    },
-    {
-      "winget": "Valve.Steam",
-      "choco": "steam-client"
-    },
-    {
-      "winget": "RustDesk.RustDesk",
-      "choco": "rustdesk.portable"
+      "winget": "Notepad++.Notepad++",
+      "choco": "notepadplusplus"
     },
     {
       "winget": "na",
       "choco": "equalizerapo"
     },
     {
-      "winget": "VideoLAN.VLC",
-      "choco": "vlc"
-    },
-    {
-      "winget": "Notepad++.Notepad++",
-      "choco": "notepadplusplus"
-    },
-    {
       "winget": "Discord.Discord",
       "choco": "discord"
     },
     {
+      "winget": "VideoLAN.VLC",
+      "choco": "vlc"
+    },
+    {
+      "winget": "7zip.7zip",
+      "choco": "7zip"
+    },
+    {
       "winget": "Google.Chrome",
       "choco": "googlechrome"
+    },
+    {
+      "winget": "RustDesk.RustDesk",
+      "choco": "rustdesk.portable"
+    },
+    {
+      "winget": "Valve.Steam",
+      "choco": "steam-client"
+    },
+    {
+      "winget": "GlavSoft.TightVNC",
+      "choco": "TightVNC"
+    },
+    {
+      "winget": "Wagnardsoft.DisplayDriverUninstaller",
+      "choco": "ddu"
     }
   ],
   "WPFTweaks": [
-    "WPFTweaksRestorePoint",
-    "WPFTweaksDisableLMS1",
-    "WPFTweaksStorage",
-    "WPFTweaksHome",
-    "WPFTweaksDiskCleanup",
-    "WPFTweaksAH",
-    "WPFTweaksTeredo",
-    "WPFTweaksEndTaskOnTaskbar",
-    "WPFTweaksWifi",
-    "WPFTweaksConsumerFeatures",
-    "WPFTweaksTele",
-    "WPFTweaksDisableipsix",
     "WPFTweaksDebloatAdobe",
-    "WPFTweaksRecallOff",
+    "WPFTweaksTele",
+    "WPFTweaksConsumerFeatures",
+    "WPFTweaksAH",
+    "WPFTweaksRemoveCopilot",
     "WPFTweaksEdgeDebloat",
-    "WPFTweaksServices",
-    "WPFTweaksDeleteTempFiles",
     "WPFTweaksHiber",
+    "WPFTweaksServices",
+    "WPFTweaksWifi",
+    "WPFTweaksEndTaskOnTaskbar",
+    "WPFTweaksDVR",
+    "WPFTweaksTeredo",
+    "WPFTweaksRecallOff",
+    "WPFTweaksDiskCleanup",
+    "WPFTweaksStorage",
+    "WPFTweaksDisableipsix",
     "WPFTweaksPowershell7Tele",
     "WPFTweaksDisableExplorerAutoDiscovery",
-    "WPFTweaksRemoveCopilot",
+    "WPFTweaksDeleteTempFiles",
     "WPFTweaksLoc",
-    "WPFTweaksDVR"
+    "WPFTweaksDisableLMS1",
+    "WPFTweaksHome"
   ],
   "WPFFeature": [
-    "WPFFeaturenfs",
-    "WPFFeaturesdotnet"
+    "WPFFeaturesdotnet",
+    "WPFFeaturenfs"
   ]
 }
