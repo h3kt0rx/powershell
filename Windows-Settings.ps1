@@ -4,10 +4,11 @@ Copy and Paste the following in Powershell as Administrator:
 Set-ExecutionPolicy Unrestricted
 iwr -useb https://christitus.com/win | iex
 --------------------------------------------------------------------------#>
+#Set-PSDebug -Trace 2
 ############################################################################################################################################################
 <# Check if the script is running as Administrator #>
 ############################################################################################################################################################
-Write-Host "Set script as Administrator" 
+Write-Host "Set script as Administrator" -ForegroundColor Cyan
 $principal = [Security.Principal.WindowsPrincipal]([Security.Principal.WindowsIdentity]::GetCurrent())
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     # Restart the script with Administrator privileges
@@ -20,22 +21,22 @@ $Host.UI.RawUI.WindowTitle = "$($myInvocation.MyCommand.Definition) (Administrat
 $Host.UI.RawUI.BackgroundColor = "Black"
 $Host.PrivateData.ProgressBackgroundColor = "Black"
 $Host.PrivateData.ProgressForegroundColor = "White"
-Write-Host "Done." 
+Write-Host "Done." -ForegroundColor Green
 ############################################################################################################################################################
 <# Disable User Account Control (UAC) #>
 ############################################################################################################################################################
-Write-Host "Disable UAC Notification" 
+Write-Host "Disable UAC Notification"  -ForegroundColor Cyan
 $UACValue = "0" # 0 = Never Notify
 $UACKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
 # Set the registry value
 Set-ItemProperty -Path $UACKey -Name "ConsentPromptBehaviorAdmin" -Value $UACValue
 Set-ItemProperty -Path $UACKey -Name "ConsentPromptBehaviorUser" -Value $UACValue
 Set-ItemProperty -Path $UACKey -Name "EnableLUA" -Value "0"
-Write-Host "Done." 
+Write-Host "Done." -ForegroundColor Green
 ############################################################################################################################################################
 <# NVIDIA Profile #>
 ############################################################################################################################################################
-Write-Host "Setting NVIDIA Profile" 
+Write-Host "Setting NVIDIA Profile" -ForegroundColor Cyan
 # Define URLs
 $zipUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/nvidiaProfileInspector.zip"
 $configUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/custom.nip"
@@ -57,11 +58,11 @@ $process = Start-Process -FilePath $extractPath\nvidiaProfileInspector.exe -Argu
 $process.WaitForExit()
 # Clean up
 Remove-Item -Recurse -Force -Path $tempDir
-Write-Host "Done."
+Write-Host "Done." -ForegroundColor Green
 ############################################################################################################################################################
 <# Script to Disable Core Isolation and Enable Game Mode #>
 ############################################################################################################################################################
-Write-Host "Enabling Game Mode and Disabling Core Isolation"
+Write-Host "Enabling Game Mode and Disabling Core Isolation" -ForegroundColor Cyan
 
 # Enable Game Mode using reg add
 reg add "HKCU\SOFTWARE\Microsoft\GameBar" /v AutoGameModeEnabled /t REG_DWORD /d 1 /f
@@ -70,22 +71,22 @@ reg add "HKCU\SOFTWARE\Microsoft\GameBar" /v UseGameMode /t REG_DWORD /d 1 /f
 # Disable Core Isolation Memory Integrity using reg add
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 0 /f
 
-Write-Host "Done."
+Write-Host "Done." -ForegroundColor Green
 ############################################################################################################################################################
 <# Run O&O ShutUp #>
 ############################################################################################################################################################
-Write-Host "Running O&O ShutUp"
+Write-Host "Running O&O ShutUp" -ForegroundColor Cyan
 $OOSU_filepath = "$ENV:temp\OOSU10.exe"
 $oosu_config = "$ENV:temp\ooshutup10.cfg"
 Invoke-WebRequest -Uri "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -OutFile $OOSU_filepath
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/ooshutup10.cfg" -OutFile $oosu_config
 Write-Host "Applying personal O&O Shutup 10 Policies"
 Start-Process $OOSU_filepath -ArgumentList "$oosu_config /quiet" -Wait
-Write-Host "Done." 
+Write-Host "Done." -ForegroundColor Green
 ############################################################################################################################################################
 <# Remove Gamebar #>
 ############################################################################################################################################################
-Write-Host "Removing Gamebar" 
+Write-Host "Removing Gamebar"  -ForegroundColor Cyan
 # disable gamebar regedit
 reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d "0" /f | Out-Null
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d "0" /f | Out-Null
@@ -103,23 +104,27 @@ reg add "HKLM\SYSTEM\ControlSet001\Services\XblAuthManager" /v "Start" /t REG_DW
 reg add "HKLM\SYSTEM\ControlSet001\Services\XblGameSave" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
 # disable xbox live networking service regedit
 reg add "HKLM\SYSTEM\ControlSet001\Services\XboxNetApiSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+Write-Host "Done." -ForegroundColor Green
 # disable ms-gamebar notifications with xbox controller plugged in regedit
-Write-Host "Disabling Game Bar Notifications Triggered by Xbox Controller"
+Write-Host "Disabling Game Bar Notifications Triggered by Xbox Controller" -ForegroundColor Cyan
 # ms-gamebar
+reg delete "HKCR\ms-gamebar" /f
 reg add "HKCR\ms-gamebar" /ve /d "URL:ms-gamebar" /f
 reg add "HKCR\ms-gamebar" /v "URL Protocol" /t REG_SZ /d "" /f
 reg add "HKCR\ms-gamebar" /v "NoOpenWith" /t REG_SZ /d "" /f
-reg add "HKCR\ms-gamebar\shell\open\command" /ve /d "\"%SystemRoot%\\System32\\systray.exe\"" /f
+reg add "HKCR\ms-gamebar\shell\open\command" /ve /d '\"%SystemRoot%\\System32\\systray.exe\"' /f
 # ms-gamebarservices
+reg delete "HKCR\ms-gamebarservices" /f
 reg add "HKCR\ms-gamebarservices" /ve /d "URL:ms-gamebarservices" /f
 reg add "HKCR\ms-gamebarservices" /v "URL Protocol" /t REG_SZ /d "" /f
 reg add "HKCR\ms-gamebarservices" /v "NoOpenWith" /t REG_SZ /d "" /f
-reg add "HKCR\ms-gamebarservices\shell\open\command" /ve /d "\"%SystemRoot%\\System32\\systray.exe\"" /f
+reg add "HKCR\ms-gamebarservices\shell\open\command" /ve /d '\"%SystemRoot%\\System32\\systray.exe\"' /f
 # ms-gamingoverlay
+reg delete "HKCR\ms-gamingoverlay" /f
 reg add "HKCR\ms-gamingoverlay" /ve /d "URL:ms-gamingoverlay" /f
 reg add "HKCR\ms-gamingoverlay" /v "URL Protocol" /t REG_SZ /d "" /f
 reg add "HKCR\ms-gamingoverlay" /v "NoOpenWith" /t REG_SZ /d "" /f
-reg add "HKCR\ms-gamingoverlay\shell\open\command" /ve /d "\"%SystemRoot%\\System32\\systray.exe\"" /f
+reg add "HKCR\ms-gamingoverlay\shell\open\command" /ve /d '\"%SystemRoot%\System32\systray.exe\"' /f
 # stop gamebar running
 Stop-Process -Force -Name GameBar -ErrorAction SilentlyContinue | Out-Null
 # uninstall gamebar & xbox apps
@@ -130,195 +135,22 @@ Get-AppxPackage -allusers *Microsoft.XboxGameOverlay* | Remove-AppxPackage
 Get-AppxPackage -allusers *Microsoft.XboxGamingOverlay* | Remove-AppxPackage
 Get-AppxPackage -allusers *Microsoft.XboxIdentityProvider* | Remove-AppxPackage
 Get-AppxPackage -allusers *Microsoft.XboxSpeechToTextOverlay* | Remove-AppxPackage
-Write-Host "Done." 
-############################################################################################################################################################
-<# Monitor Optimizations #>
-############################################################################################################################################################
-
-
-
-
+Write-Host "Done." -ForegroundColor Green
 
 ############################################################################################################################################################
 <# Powerplan #>
 ############################################################################################################################################################
-# import ultimate power plan
-cmd /c "powercfg /duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 99999999-9999-9999-9999-999999999999 >nul 2>&1"
-# set ultimate power plan active
-cmd /c "powercfg /SETACTIVE 99999999-9999-9999-9999-999999999999 >nul 2>&1"
-# get all powerplans
-$output = powercfg /L
-$powerPlans = @()
-foreach ($line in $output) {
-# extract guid manually to avoid lang issues
-if ($line -match ':') {
-$parse = $line -split ':'
-$index = $parse[1].Trim().indexof('(')
-$guid = $parse[1].Trim().Substring(0, $index)
-$powerPlans += $guid
-}
-}
-# delete all powerplans
-foreach ($plan in $powerPlans) {
-cmd /c "powercfg /delete $plan" | Out-Null
-}
-
-# disable hibernate
-powercfg /hibernate off
-cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Control\Power`" /v `"HibernateEnabled`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
-cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Control\Power`" /v `"HibernateEnabledDefault`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
-# disable lock
-cmd /c "reg add `"HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FlyoutMenuSettings`" /v `"ShowLockOption`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
-# disable sleep
-cmd /c "reg add `"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FlyoutMenuSettings`" /v `"ShowSleepOption`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
-# disable fast boot
-cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power`" /v `"HiberbootEnabled`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
-# unpark cpu cores
-cmd /c "reg add `"HKLM\SYSTEM\ControlSet001\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583`" /v `"ValueMax`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
-# disable power throttling
-cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling`" /v `"PowerThrottlingOff`" /t REG_DWORD /d `"1`" /f >nul 2>&1"
-# unhide hub selective suspend timeout
-cmd /c "reg add `"HKLM\System\ControlSet001\Control\Power\PowerSettings\2a737441-1930-4402-8d77-b2bebba308a3\0853a681-27c8-4100-a2fd-82013e970683`" /v `"Attributes`" /t REG_DWORD /d `"2`" /f >nul 2>&1"
-# unhide usb 3 link power management
-cmd /c "reg add `"HKLM\System\ControlSet001\Control\Power\PowerSettings\2a737441-1930-4402-8d77-b2bebba308a3\d4e98f31-5ffe-4ce1-be31-1b38b384c009`" /v `"Attributes`" /t REG_DWORD /d `"2`" /f >nul 2>&1"
-# MODIFY DESKTOP & LAPTOP SETTINGS
-# hard disk turn off hard disk after 0%
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 0012ee47-9041-4b5d-9b77-535fba8b1442 6738e2c4-e8a5-4a42-b16a-e040e769756e 0x00000000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 0012ee47-9041-4b5d-9b77-535fba8b1442 6738e2c4-e8a5-4a42-b16a-e040e769756e 0x00000000
-# desktop background settings slide show paused
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 0d7dbae2-4294-402a-ba8e-26777e8488cd 309dce9b-bef4-4119-9921-a851fb12f0f4 001
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 0d7dbae2-4294-402a-ba8e-26777e8488cd 309dce9b-bef4-4119-9921-a851fb12f0f4 001
-# wireless adapter settings power saving mode maximum performance
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 000
-# sleep
-# sleep after 0%
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41ed-83f4-97be242c8f20 29f6c1db-86da-48c5-9fdb-f2b67b1f44da 0x00000000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41ed-83f4-97be242c8f20 29f6c1db-86da-48c5-9fdb-f2b67b1f44da 0x00000000
-# allow hybrid sleep off
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41ed-83f4-97be242c8f20 94ac6d29-73ce-41a6-809f-6363ba21b47e 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41ed-83f4-97be242c8f20 94ac6d29-73ce-41a6-809f-6363ba21b47e 000
-# hibernate after
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41ed-83f4-97be242c8f20 9d7815a6-7ee4-497e-8888-515a05f02364 0x00000000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41ed-83f4-97be242c8f20 9d7815a6-7ee4-497e-8888-515a05f02364 0x00000000
-# allow wake timers disable
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41ed-83f4-97be242c8f20 bd3b718a-0680-4d9d-8ab2-e1d2b4ac806d 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 238c9fa8-0aad-41ed-83f4-97be242c8f20 bd3b718a-0680-4d9d-8ab2-e1d2b4ac806d 000
-# usb settings
-# hub selective suspend timeout 0
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 0853a681-27c8-4100-a2fd-82013e970683 0x00000000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 0853a681-27c8-4100-a2fd-82013e970683 0x00000000
-# usb selective suspend setting disabled
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 000
-# usb 3 link power management - off
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 d4e98f31-5ffe-4ce1-be31-1b38b384c009 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 2a737441-1930-4402-8d77-b2bebba308a3 d4e98f31-5ffe-4ce1-be31-1b38b384c009 000
-# power buttons and lid start menu power button shut down
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 4f971e89-eebd-4455-a8de-9e59040e7347 a7066653-8d6c-40a8-910e-a1f54b84c7e5 002
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 4f971e89-eebd-4455-a8de-9e59040e7347 a7066653-8d6c-40a8-910e-a1f54b84c7e5 002
-# pci express link state power management off
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 501a4d13-42af-4429-9fd1-a8218c268e20 ee12f906-d277-404b-b6da-e5fa1a576df5 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 501a4d13-42af-4429-9fd1-a8218c268e20 ee12f906-d277-404b-b6da-e5fa1a576df5 000
-# processor power management
-# minimum processor state 100%
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 54533251-82be-4824-96c1-47b60b740d00 893dee8e-2bef-41e0-89c6-b55d0929964c 0x00000064
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 54533251-82be-4824-96c1-47b60b740d00 893dee8e-2bef-41e0-89c6-b55d0929964c 0x00000064
-# system cooling policy active
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 54533251-82be-4824-96c1-47b60b740d00 94d3a615-a899-4ac5-ae2b-e4d8f634367f 001
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 54533251-82be-4824-96c1-47b60b740d00 94d3a615-a899-4ac5-ae2b-e4d8f634367f 001
-# maximum processor state 100%
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 54533251-82be-4824-96c1-47b60b740d00 bc5038f7-23e0-4960-96da-33abaf5935ec 0x00000064
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 54533251-82be-4824-96c1-47b60b740d00 bc5038f7-23e0-4960-96da-33abaf5935ec 0x00000064
-# display
-# turn off display after 0%
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 7516b95f-f776-4464-8c53-06167f40cc99 3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e 0x00000000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 7516b95f-f776-4464-8c53-06167f40cc99 3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e 0x00000000
-# display brightness 100%
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 7516b95f-f776-4464-8c53-06167f40cc99 aded5e82-b909-4619-9949-f5d71dac0bcb 0x00000064
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 7516b95f-f776-4464-8c53-06167f40cc99 aded5e82-b909-4619-9949-f5d71dac0bcb 0x00000064
-# dimmed display brightness 100%
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 7516b95f-f776-4464-8c53-06167f40cc99 f1fbfde2-a960-4165-9f88-50667911ce96 0x00000064
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 7516b95f-f776-4464-8c53-06167f40cc99 f1fbfde2-a960-4165-9f88-50667911ce96 0x00000064
-# enable adaptive brightness off
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 7516b95f-f776-4464-8c53-06167f40cc99 fbd9aa66-9553-4097-ba44-ed6e9d65eab8 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 7516b95f-f776-4464-8c53-06167f40cc99 fbd9aa66-9553-4097-ba44-ed6e9d65eab8 000
-# video playback quality bias video playback performance bias
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 9596fb26-9850-41fd-ac3e-f7c3c00afd4b 10778347-1370-4ee0-8bbd-33bdacaade49 001
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 9596fb26-9850-41fd-ac3e-f7c3c00afd4b 10778347-1370-4ee0-8bbd-33bdacaade49 001
-# when playing video optimize video quality
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 9596fb26-9850-41fd-ac3e-f7c3c00afd4b 34c7b99f-9a6d-4b3c-8dc7-b6693b78cef4 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 9596fb26-9850-41fd-ac3e-f7c3c00afd4b 34c7b99f-9a6d-4b3c-8dc7-b6693b78cef4 000
-# MODIFY LAPTOP SETTINGS
-# intel(r) graphics settings intel(r) graphics power plan maximum performance
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 44f3beca-a7c0-460e-9df2-bb8b99e0cba6 3619c3f2-afb2-4afc-b0e9-e7fef372de36 002
-
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 44f3beca-a7c0-460e-9df2-bb8b99e0cba6 3619c3f2-afb2-4afc-b0e9-e7fef372de36 002
-
-# amd power slider overlay best performance
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 c763b4ec-0e50-4b6b-9bed-2b92a6ee884e 7ec1751b-60ed-4588-afb5-9819d3d77d90 003
-
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 c763b4ec-0e50-4b6b-9bed-2b92a6ee884e 7ec1751b-60ed-4588-afb5-9819d3d77d90 003
-
-# ati graphics power settings ati powerplay settings maximize performance
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 f693fb01-e858-4f00-b20f-f30e12ac06d6 191f65b5-d45c-4a4f-8aae-1ab8bfd980e6 001
-
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 f693fb01-e858-4f00-b20f-f30e12ac06d6 191f65b5-d45c-4a4f-8aae-1ab8bfd980e6 001
-
-# switchable dynamic graphics global settings maximize performance
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e276e160-7cb0-43c6-b20b-73f5dce39954 a1662ab2-9d34-4e53-ba8b-2639b9e20857 003
-
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e276e160-7cb0-43c6-b20b-73f5dce39954 a1662ab2-9d34-4e53-ba8b-2639b9e20857 003
-
-# battery
-# critical battery notification off
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f 5dbb7c9f-38e9-40d2-9749-4f8a0e9f640f 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f 5dbb7c9f-38e9-40d2-9749-4f8a0e9f640f 000
-# critical battery action do nothing
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f 637ea02f-bbcb-4015-8e2c-a1c7b9c0b546 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f 637ea02f-bbcb-4015-8e2c-a1c7b9c0b546 000
-# low battery level 0%
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f 8183ba9a-e910-48da-8769-14ae6dc1170a 0x00000000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f 8183ba9a-e910-48da-8769-14ae6dc1170a 0x00000000
-# critical battery level 0%
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f 9a66d8d7-4ff7-4ef9-b5a2-5a326ca2a469 0x00000000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f 9a66d8d7-4ff7-4ef9-b5a2-5a326ca2a469 0x00000000
-# low battery notification off
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f bcded951-187b-4d05-bccc-f7e51960c258 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f bcded951-187b-4d05-bccc-f7e51960c258 000
-# low battery action do nothing
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f d8742dcb-3e6a-4b3c-b3fe-374623cdcf06 000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f d8742dcb-3e6a-4b3c-b3fe-374623cdcf06 000
-# reserve battery level 0%
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f f3c5027d-cd16-4930-aa6b-90db844a8f00 0x00000000
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 e73a048d-bf27-4f12-9731-8b2076e8891f f3c5027d-cd16-4930-aa6b-90db844a8f00 0x00000000
-# immersive control panel
-# low screen brightness when using battery saver disable
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 de830923-a562-41af-a086-e3a2c6bad2da 13d09884-f74e-474a-a852-b6bde8ad03a8 0x00000064
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 de830923-a562-41af-a086-e3a2c6bad2da 13d09884-f74e-474a-a852-b6bde8ad03a8 0x00000064
-
-# immersive control panel
-# turn battery saver on automatically at never
-powercfg /setacvalueindex 99999999-9999-9999-9999-999999999999 de830923-a562-41af-a086-e3a2c6bad2da e69653ca-cf7f-4f05-aa73-cb833fa90ad4 0x00000000
-
-powercfg /setdcvalueindex 99999999-9999-9999-9999-999999999999 de830923-a562-41af-a086-e3a2c6bad2da e69653ca-cf7f-4f05-aa73-cb833fa90ad4 0x00000000
-
-Write-Host "OLED monitor users: Set 'Turn off the display' to '5 minutes' to prevent burn-in." -ForegroundColor Red
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-
-Write-Host "Restart to apply . . ."
 
 ############################################################################################################################################################
 <# Registry #>
 ############################################################################################################################################################
-Write-Host "Running Registry Tweaks" 
+Write-Host "Running Registry Tweaks" -ForegroundColor Cyan
 
 #--------------------------------
 # APPEARANCE AND PERSONALIZATION
 #--------------------------------
 
-# Open File Explorer to “This PC”
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "LaunchTo" /t REG_DWORD /d 1 /f
+
 # Hide frequent folders in Quick Access
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer" /v "ShowFrequent" /t REG_DWORD /d 0 /f
 # Show file-name extensions
@@ -341,82 +173,55 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "S
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowSyncProviderNotifications" /t REG_DWORD /d 0 /f
 # Disable the Sharing Wizard
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "SharingWizardOn" /t REG_DWORD /d 0 /f
-# Disable “Group by” view in File Explorer
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "GroupView" /t REG_DWORD /d 0 /f
 
 #--------
 # GAMING
 #--------
 
 # Disable the Game Bar to prevent its use
-Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Value 0
+reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d 0 /f
 # Disable app capture feature in Game DVR
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "AppCaptureEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f
 # Disable the Xbox Game Bar from opening using the game controller
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\GameBar" -Name "UseNexusForGameBarEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\GameBar" /v "UseNexusForGameBarEnabled" /t REG_DWORD /d 0 /f
 # Set audio encoding bitrate for Game DVR
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "AudioEncodingBitrate" -Value 130000
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AudioEncodingBitrate" /t REG_DWORD /d 130000 /f
 # Disable audio capture in Game DVR
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "AudioCaptureEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AudioCaptureEnabled" /t REG_DWORD /d 0 /f
 # Set custom video encoding bitrate
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "CustomVideoEncodingBitrate" -Value 4100000
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "CustomVideoEncodingBitrate" /t REG_DWORD /d 4100000 /f
 # Set custom video encoding height
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "CustomVideoEncodingHeight" -Value 720
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "CustomVideoEncodingHeight" /t REG_DWORD /d 720 /f
 # Set custom video encoding width
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "CustomVideoEncodingWidth" -Value 1280
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "CustomVideoEncodingWidth" /t REG_DWORD /d 1280 /f
 # Set historical buffer length
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "HistoricalBufferLength" -Value 30
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "HistoricalBufferLength" /t REG_DWORD /d 30 /f
 # Set historical buffer length unit
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "HistoricalBufferLengthUnit" -Value 1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "HistoricalBufferLengthUnit" /t REG_DWORD /d 1 /f
 # Disable historical capture feature
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "HistoricalCaptureEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "HistoricalCaptureEnabled" /t REG_DWORD /d 0 /f
 # Allow historical capture on battery
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "HistoricalCaptureOnBatteryAllowed" -Value 1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "HistoricalCaptureOnBatteryAllowed" /t REG_DWORD /d 1 /f
 # Allow historical capture on wireless display
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "HistoricalCaptureOnWirelessDisplayAllowed" -Value 1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "HistoricalCaptureOnWirelessDisplayAllowed" /t REG_DWORD /d 1 /f
 # Set maximum record length
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "MaximumRecordLength" -Value 368640000
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "MaximumRecordLength" /t REG_DWORD /d 368640000 /f
 # Set video encoding bitrate mode
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VideoEncodingBitrateMode" -Value 2
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "VideoEncodingBitrateMode" /t REG_DWORD /d 2 /f
 # Set video encoding resolution mode
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VideoEncodingResolutionMode" -Value 2
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "VideoEncodingResolutionMode" /t REG_DWORD /d 2 /f
 # Set video encoding frame rate mode
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VideoEncodingFrameRateMode" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "VideoEncodingFrameRateMode" /t REG_DWORD /d 0 /f
 # Enable echo cancellation
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "EchoCancellationEnabled" -Value 1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "EchoCancellationEnabled" /t REG_DWORD /d 1 /f
 # Disable cursor capture
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "CursorCaptureEnabled" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "CursorCaptureEnabled" /t REG_DWORD /d 0 /f
 # Disable hotkeys for toggling Game Bar
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKToggleGameBar" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKMToggleGameBar" -Value 0
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "VKToggleGameBar" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "VKMToggleGameBar" /t REG_DWORD /d 0 /f
 # Disable hotkeys for saving historical video
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKSaveHistoricalVideo" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKMSaveHistoricalVideo" -Value 0
-# Disable hotkeys for toggling recording
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKToggleRecording" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKMToggleRecording" -Value 0
-# Disable hotkeys for taking screenshots
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKTakeScreenshot" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKMTakeScreenshot" -Value 0
-# Disable hotkeys for toggling recording indicator
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKToggleRecordingIndicator" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKMToggleRecordingIndicator" -Value 0
-# Disable hotkeys for toggling microphone capture
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKToggleMicrophoneCapture" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKMToggleMicrophoneCapture" -Value 0
-# Disable hotkeys for toggling camera capture
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKToggleCameraCapture" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKMToggleCameraCapture" -Value 0
-# Disable hotkeys for toggling broadcast
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKToggleBroadcast" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "VKMToggleBroadcast" -Value 0
-# Disable microphone capture
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "MicrophoneCaptureEnabled" -Value 0
-# Set system audio gain
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "SystemAudioGain" -Value 4294967296
-# Set microphone gain
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" -Name "MicrophoneGain" -Value 4294967296
-
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "VKSaveHistoricalVideo" /t REG_DWORD /d 0 /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "VKMSaveHistoricalVideo" /t REG_DWORD /d 0 /f
 
 #-----------------
 # PERSONALIZATION
@@ -426,10 +231,6 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR"
 reg delete "HKCU\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v "ShowOrHideMostUsedApps" /f
 reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoStartMenuMFUprogramsList" /f
 reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoInstrumentation" /f
-# Set a solid color as the background
-reg add "HKCU\Control Panel\Desktop" /v "Wallpaper" /t REG_SZ /d "" /f
-# Set wallpaper type to solid color
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Wallpapers" /v "BackgroundType" /t REG_DWORD /d 1 /f
 # Enable dark theme for apps and system
 reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f
 reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "SystemUsesLightTheme" /t REG_DWORD /d 0 /f
@@ -456,8 +257,6 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "H
 reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_AccountNotifications" /t REG_DWORD /d 0 /f
 # Disable showing recently opened items
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_TrackDocs" /t REG_DWORD /d 0 /f
-# Align taskbar to the left
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarAl" /t REG_DWORD /d 1 /f
 # Remove Chat from taskbar
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarMn" /t REG_DWORD /d 0 /f
 # Remove Task View
@@ -466,12 +265,8 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "S
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchboxTaskbarMode" /t REG_DWORD /d 0 /f
 # Remove Widgets
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Dsh" /v "AllowNewsAndInterests" /t REG_DWORD /d 0 /f
-# Remove Copilot
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowCopilotButton" /t REG_DWORD /d 0 /f
 # Remove Meet Now
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "HideSCAMeetNow" /t REG_DWORD /d 1 /f
-# Remove Action Center
-reg add "HKCU\SOFTWARE\Policies\Microsoft\Windows\Explorer" /v "DisableNotificationCenter" /t REG_DWORD /d 0 /f
 # Remove News and Interests
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" /v "EnableFeeds" /t REG_DWORD /d 0 /f
 # Show all taskbar icons
@@ -614,107 +409,55 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Control" /v "WaitToKillServiceTimeout" /t
 # OTHER
 #-------
 
+# Remove specified registry keys
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" /f
+reg delete "HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" /f
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace_36354489\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}" /f
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace_41040327\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}" /f
 
-# Function to remove specified registry keys
-function Remove-RegistryKeys {
-    param ([array]$Items)  # Accepts an array of registry paths to remove
-    foreach ($item in $Items) {  # Loop through each item in the provided array
-        # Check if the specified path exists
-        if (Test-Path -Path $item.Path) {  
-            # Remove the registry key at the specified path
-            Remove-Item -Path $item.Path -Force -ErrorAction SilentlyContinue  
-        }
-    }
-}
-# Define an array of hashtables representing registry entries to remove
-$itemsToRemove = @(  
-    # Remove the "3D Objects" folder from "This PC"
-    @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" },  
-    # Remove the "3D Objects" folder for 32-bit applications on a 64-bit system
-    @{ Path = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" },  
-    # Remove the "Home" folder from the Desktop
-    @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace_36354489\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}" },  
-    # Remove the "Gallery" folder from the Desktop
-    @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace_41040327\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}" }  
-)
-# Call the function to remove the specified registry keys
-Remove-RegistryKeys $itemsToRemove  
-# Script to disable Enhance Pointer Precision
-# Define the registry path
-$registryPath = "HKCU:\Control Panel\Mouse"
-# Define the registry values and their intended settings
-$values = @{
-    "MouseSpeed"     = "0"
-    "MouseThreshold1" = "0"
-    "MouseThreshold2" = "0"
-}
-# Check if the registry path exists
-if (-not (Test-Path $registryPath)) {
-    New-Item -Path $registryPath -Force | Out-Null
-}
-# Iterate through each value and set it
-foreach ($name in $values.Keys) {
-    $value = $values[$name]
-    # Check if the registry value exists
-    if (-not (Get-ItemProperty -Path $registryPath -Name $name -ErrorAction SilentlyContinue)) {
-        # If the value does not exist, create it
-        New-ItemProperty -Path $registryPath -Name $name -Value $value -PropertyType String -Force | Out-Null
-    } else {
-        # If the value exists, check if it needs to be updated
-        $currentValue = (Get-ItemProperty -Path $registryPath -Name $name).$name
-        if ($currentValue -ne $value) {
-            Set-ItemProperty -Path $registryPath -Name $name -Value $value | Out-Null
-        }
-    }
-}
-# Restore the classic context menu
-Set-ItemProperty -Path "HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" -Name "(default)" -Value ""
+# Disable Enhance Pointer Precision
+reg add "HKCU\Control Panel\Mouse" /v "MouseSpeed" /t REG_SZ /d "0" /f
+reg add "HKCU\Control Panel\Mouse" /v "MouseThreshold1" /t REG_SZ /d "0" /f
+reg add "HKCU\Control Panel\Mouse" /v "MouseThreshold2" /t REG_SZ /d "0" /f
+
+
 # Remove Quick Access from File Explorer
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "HubMode" -Value 1
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /v "HubMode" /t REG_DWORD /d 1 /f
+
 # Disable menu show delay
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Value "0"
+reg add "HKCU\Control Panel\Desktop" /v "MenuShowDelay" /t REG_SZ /d "0" /f
+
 # Disable driver searching & updates
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching" -Name "SearchOrderConfig" -Value 0
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching" /v "SearchOrderConfig" /t REG_DWORD /d 0 /f
+
 # Mouse fix settings
-Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseSensitivity" -Value "10"
-Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "SmoothMouseXCurve" -Value ([byte[]](0,0,0,0,0,0,0,0,192,204,12,0,0,0,0,0,128,153,25,0,0,0,0,0,64,102,38,0,0,0,0,0))
-Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "SmoothMouseYCurve" -Value ([byte[]](0,0,0,0,0,0,0,0,0,0,56,0,0,0,0,0,0,0,112,0,0,0,0,0,0,0,168,0,0,0,0,0,0,0,224,0,0,0,0,0))
+reg add "HKCU\Control Panel\Mouse" /v "MouseSensitivity" /t REG_SZ /d "10" /f
+reg add "HKCU\Control Panel\Mouse" /v "SmoothMouseXCurve" /t REG_BINARY /d 0000000000000000c0cc0c0000000000809919000000000406626000000000 /f
+reg add "HKCU\Control Panel\Mouse" /v "SmoothMouseYCurve" /t REG_BINARY /d 0000000000000000000038000000000000007000000000000000a80000000000e0000000000000 /f
 
 # Disable Group View in Explorer
-New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Streams\Settings" -Force | Out-Null; Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Streams\Settings" -Name "IsGroupByDefault" -Value 0 -Type DWORD -Force | Out-Null; Stop-Process -Name explorer -Force | Out-Null; Start-Process explorer | Out-Null
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Streams\Settings" /v "IsGroupByDefault" /t REG_DWORD /d 0 /f
+taskkill /f /im explorer.exe
+start explorer.exe
 
 # Disable ConfirmFileDelete
-Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "ConfirmFileDelete" -Type DWord -Value 1
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "ConfirmFileDelete" /t REG_DWORD /d 1 /f
 
-# Script to configure "Do not preserve zone information in file attachments" policy
-$RegName = "SaveZoneInformation"
-$RegValue = 1  # 1 = Disabled (Do not preserve zone information)
-
-# Paths for both HKLM and HKCU
-$Paths = @(
-    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments",
-    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments"
-)
-
-foreach ($RegPath in $Paths) {
-    # Create registry path if it doesn't exist
-    if (-not (Test-Path $RegPath)) {
-        New-Item -Path $RegPath -Force | Out-Null
-    }
-
-    # Set registry value
-    Set-ItemProperty -Path $RegPath -Name $RegName -Value $RegValue -Type DWORD -Force
-}
+# Configure "Do not preserve zone information in file attachments" policy
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments" /v "SaveZoneInformation" /t REG_DWORD /d 1 /f
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments" /v "SaveZoneInformation" /t REG_DWORD /d 1 /f
 
 # Force Group Policy update
 gpupdate /force
-Write-Host "Done."
+
+Write-Host "Done." -ForegroundColor Green
+
 ############################################################################################################################################################
 <# C++ Installation #>
 ############################################################################################################################################################
 $install = Read-Host "Do you want to install C++ Redistributable dependencies for games? (Y/N)"
 if ($install -match "[Yy]") {
-    Write-Host "Installing C++ for running applications"
+    Write-Host "Installing C++ for running applications" -ForegroundColor Cyan
 
     function Get-FileFromWeb {
         param (
@@ -802,104 +545,104 @@ if ($install -match "[Yy]") {
         Start-Process -wait $_ -ArgumentList $arguments[$argIndex]
     }
 
-    Write-Host "Done."
+    Write-Host "Done." -ForegroundColor Green
 } else {
-    Write-Host "Installation canceled."
+    Write-Host "Installation Skipped." -ForegroundColor Cyan
 }
 
 ############################################################################################################################################################
 <# Direct X Installation #>
 ############################################################################################################################################################
-Write-Host "Installing DirectX" 
-# Define the URL and paths
-$DXFileUri = "https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-AD2AE20B6B14/directx_Jun2010_redist.exe"
-$DXFileUri2 = "https://www.7-zip.org/a/7z2301-x64.exe"
-$DXDestination = "$env:TEMP\directx_Jun2010_redist.exe"
-$DXDestination2 = "$env:TEMP\7-Zip.exe"
-$DXExtractPath = "$env:TEMP\DirectX_Install"
-# Download the DirectX Web Setup
-$DXbitsJobObj = Start-BitsTransfer -Source $DXFileUri -Destination $DXDestination
-$DXbitsJobObj = Start-BitsTransfer -Source $DXFileUri2 -Destination $DXDestination2
 
-switch ($DXbitsJobObj.JobState) {
-    'Transferred' {
-        Complete-BitsTransfer -BitsJob $DXbitsJobObj
-        break
+# Ask the user if they want to install DirectX
+$installDirectX = Read-Host "Do you want to install DirectX? (Y/N)"
+
+if ($installDirectX -match '^[Yy]$') {
+    Write-Host "Installing DirectX..." -ForegroundColor Cyan
+
+    # Define the URL and paths
+    $DXFileUri = "https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-AD2AE20B6B14/directx_Jun2010_redist.exe"
+    $DXFileUri2 = "https://www.7-zip.org/a/7z2301-x64.exe"
+    $DXDestination = "$env:TEMP\directx_Jun2010_redist.exe"
+    $DXDestination2 = "$env:TEMP\7-Zip.exe"
+    $DXExtractPath = "$env:TEMP\DirectX_Install"
+
+    # Download DirectX installer
+    Write-Host "Downloading DirectX..." -ForegroundColor Yellow
+    $DXbitsJobObj = Start-BitsTransfer -Source $DXFileUri -Destination $DXDestination
+    $DXbitsJobObj = Start-BitsTransfer -Source $DXFileUri2 -Destination $DXDestination2
+
+    switch ($DXbitsJobObj.JobState) {
+        'Transferred' {
+            Complete-BitsTransfer -BitsJob $DXbitsJobObj
+            break
+        }
+        'Error' {
+            throw 'Error downloading'
+        }
     }
-    'Error' {
-        throw 'Error downloading'
+
+    # Create the extraction directory if it doesn't exist
+    if (-Not (Test-Path -Path $DXExtractPath)) {
+        New-Item -ItemType Directory -Path $DXExtractPath | Out-Null
     }
-}
 
-# Create the extraction directory if it doesn't exist
-if (-Not (Test-Path -Path $DXExtractPath)) {
-    New-Item -ItemType Directory -Path $DXExtractPath | Out-Null
-}
+    # Install 7-Zip silently
+    Write-Host "Installing 7-Zip..." -ForegroundColor Yellow
+    Start-Process -Wait "$env:TEMP\7-Zip.exe" /S
 
-Start-Process -wait "$env:TEMP\7-Zip.exe" /S
-# extract files with 7zip
-cmd /c "C:\Program Files\7-Zip\7z.exe" x "$DXDestination" -o"$DXExtractPath" -y | Out-Null
-# install direct x
-Start-Process "$DXExtractPath\DXSETUP.exe" -ArgumentList "/silent" -Wait
-# Clean up the installer
-Remove-Item -Path $DXDestination -Force
-Write-Host "Done." 
+    # Extract DirectX installer using 7-Zip
+    Write-Host "Extracting DirectX installer..." -ForegroundColor Yellow
+    cmd /c '"C:\Program Files\7-Zip\7z.exe" x "'$DXDestination'" -o"'$DXExtractPath'" -y' | Out-Null
+
+    # Install DirectX silently
+    Write-Host "Running DirectX setup..." -ForegroundColor Yellow
+    Start-Process "$DXExtractPath\DXSETUP.exe" -ArgumentList "/silent" -Wait
+
+    # Clean up
+    Write-Host "Cleaning up..." -ForegroundColor Yellow
+    Remove-Item -Path $DXDestination -Force
+
+    Write-Host "DirectX installation complete." -ForegroundColor Green
+} else {
+    Write-Host "DirectX installation skipped." -ForegroundColor Cyan
+}
 ############################################################################################################################################################
 <# Run Titus Script #>
 ############################################################################################################################################################
-#iwr -useb "https://christitus.com/win" | iex
-<#
-# open temp folder
-Start-Process $env:C:\Windows\Temp
-# open disk cleanup
-Start-Process cleanmgr.exe
-<# 
-############################################################################################################################################################
- Remove Bloatware
-############################################################################################################################################################
-Get-AppxPackage -allusers Clipchamp.Clipchamp | Remove-AppxPackage
-Get-AppxPackage -allusers Disney.37853FC22B2CE | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.549981C3F5F10 | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.BingNews | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.BingWeather | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.GetHelp | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.Getstarted | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.MSPaint | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.Microsoft3DViewer | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.MicrosoftOfficeHub | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.MicrosoftSolitaireCollection | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.MicrosoftStickyNotes | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.MixedReality.Portal | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.Office.OneNote | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.OneDriveSync | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.People | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.PowerAutomateDesktop | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.ScreenSketch | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.SkypeApp | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.Todos | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.Wallet | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.WindowsAlarms | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.WindowsCalculator | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.WindowsCamera | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.WindowsFeedbackHub | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.WindowsMaps | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.WindowsSoundRecorder | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.YourPhone | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.ZuneMusic | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.ZuneVideo | Remove-AppxPackage
-Get-AppxPackage -allusers MicrosoftCorporationII.QuickAssist | Remove-AppxPackage
-Get-AppxPackage -allusers MicrosoftTeams | Remove-AppxPackage
-Get-AppxPackage -allusers MicrosoftWindows.Client.WebExperience | Remove-AppxPackage
-Get-AppxPackage -allusers SpotifyAB.SpotifyMusic | Remove-AppxPackage
-Get-AppxPackage -allusers Microsoft.WindowsCommunicationsApps | Remove-AppxPackage
-Get-WindowsPackage -Online | Where PackageName -like *Hello-Face* | Remove-WindowsPackage -Online -NoRestart
-Get-WindowsPackage -Online | Where PackageName -like *QuickAssist* | Remove-WindowsPackage -Online -NoRestart
- #>
+# Prompt to run first command
+# $answer1 = Read-Host "Do you want to run CTT WinUtil automated with Personal Config? [Y/N]"
+# if ($answer1 -match '^[Yy]') {
+#     Write-Host "Running CTT Automated w/Personal Config in new PowerShell window..." -ForegroundColor Cyan
+#     Start-Process powershell -ArgumentList @(
+#         '-NoProfile'
+#         '-Command'
+#         "iwr -useb 'https://christitus.com/windev' -Config 'https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json' -Run"
+#     ) -WindowStyle Normal
+#     Write-Host "Command launched." -ForegroundColor Green
+# } else {
+#     Write-Host "CTT Automation Skipped." -ForegroundColor Cyan
+# }
+
+# $answer2 = Read-Host "Do you want to run CTT WinUtil Normally? [Y/N]"
+# if ($answer2 -match '^[Yy]') {
+#     Write-Host "Running CTT WinUtil in new PowerShell window..." -ForegroundColor Cyan
+#     Start-Process powershell -ArgumentList @(
+#         '-NoProfile'
+#         '-Command'
+#         "iwr -useb 'https://christitus.com/windev' | iex"
+#     ) -WindowStyle Normal
+#     Write-Host "Command launched." -ForegroundColor Green
+# } else {
+#     Write-Host "CTT WinUtil Skipped." -ForegroundColor Cyan
+# }
+
+#iex "& { $(irm https://christitus.com/win) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"
 ############################################################################################################################################################
 # Personal Programs
 ############################################################################################################################################################
 # Prompt the user
-$installPersonalApps = Read-Host "Do you want to install personal applications before running? (Y/N)"
+# $installPersonalApps = Read-Host "Do you want to install personal applications before running? (Y/N)"
 
 # If the user responds with Y or y, proceed with the installation of personal applications
 # if ($installPersonalApps -eq 'Y' -or $installPersonalApps -eq 'y') {
@@ -931,7 +674,7 @@ $installPersonalApps = Read-Host "Do you want to install personal applications b
  ############################################################################################################################################################
 <# Timer Resolution #>
 ############################################################################################################################################################
-Write-Host "Installing: Set Timer Resolution Service"
+Write-Host "Installing: Set Timer Resolution Service" -ForegroundColor Cyan
 # create .cs file
 $MultilineComment = @"
 using System;
@@ -1141,19 +884,6 @@ Set-Service -Name "Set Timer Resolution Service" -StartupType Automatic -ErrorAc
 Set-Service -Name "Set Timer Resolution Service" -Status Running -ErrorAction SilentlyContinue | Out-Null
 # fix timer resolution regedit
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" /v "GlobalTimerResolutionRequests" /t REG_DWORD /d "1" /f | Out-Null
-Write-Host "Done." 
-############################################################################################################################################################
-<# Cleanup #>
-############################################################################################################################################################
-Write-Host "Running Cleanup" 
-# clear %temp% folder
-Remove-Item -Path "$env:USERPROFILE\AppData\Local\Temp" -Recurse -Force -ErrorAction SilentlyContinue | Out-Null
-New-Item -Path "$env:USERPROFILE\AppData\Local" -Name "Temp" -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
-<# # open %temp% folder
-Start-Process $env:TEMP #>
-# clear temp folder
-Remove-Item -Path "$env:C:\Windows\Temp" -Recurse -Force -ErrorAction SilentlyContinue | Out-Null
-New-Item -Path "$env:C:\Windows" -Name "Temp" -ItemType Directory -ErrorAction SilentlyContinue | Out-Null
-Write-Host "Done." 
-Write-Host "Restart your computer for settings to take effect."
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+Write-Host "Done."  -ForegroundColor Green
+Write-Host "Restart your computer for settings to take effect." -ForegroundColor Red
+pause
