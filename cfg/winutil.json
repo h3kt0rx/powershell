@@ -1,7 +1,6 @@
 {
   "WPFInstall": [
     "WPFInstallnotepadplus",
-    "WPFInstallEqualizerAPO",
     "WPFInstalldiscord",
     "WPFInstallvlc",
     "WPFInstall7zip",
@@ -15,10 +14,6 @@
     {
       "winget": "Notepad++.Notepad++",
       "choco": "notepadplusplus"
-    },
-    {
-      "winget": "na",
-      "choco": "equalizerapo"
     },
     {
       "winget": "Discord.Discord",
