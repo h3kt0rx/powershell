@@ -102,7 +102,7 @@ Write-Host "Done." -ForegroundColor Green
 <# Run Titus Script #>
 ############################################################################################################################################################
 # PowerShell script to prompt before running commands
-$command1 = 'iex \"& { $(irm https://christitus.com/win) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run\"'
+$command1 = 'iex "& { $(irm https://christitus.com/win) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"'
 $command2 = "iwr -useb 'https://christitus.com/win' | iex"
 
 Write-Host "Available commands for CTT WinUtil:" -ForegroundColor Yellow
