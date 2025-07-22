@@ -1,78 +1,85 @@
 {
-  "WPFInstall": [
-    "WPFInstallnotepadplus",
-    "WPFInstalldiscord",
-    "WPFInstallvlc",
-    "WPFInstall7zip",
-    "WPFInstallchrome",
-    "WPFInstallrustdesk",
-    "WPFInstallsteam",
-    "WPFInstalltightvnc",
-    "WPFInstallddu"
-  ],
-  "Install": [
-    {
-      "winget": "Notepad++.Notepad++",
-      "choco": "notepadplusplus"
-    },
-    {
-      "winget": "Discord.Discord",
-      "choco": "discord"
-    },
-    {
-      "winget": "VideoLAN.VLC",
-      "choco": "vlc"
-    },
-    {
-      "winget": "7zip.7zip",
-      "choco": "7zip"
-    },
-    {
-      "winget": "Google.Chrome",
-      "choco": "googlechrome"
-    },
-    {
-      "winget": "RustDesk.RustDesk",
-      "choco": "rustdesk.portable"
-    },
-    {
-      "winget": "Valve.Steam",
-      "choco": "steam-client"
-    },
-    {
-      "winget": "GlavSoft.TightVNC",
-      "choco": "TightVNC"
-    },
-    {
-      "winget": "Wagnardsoft.DisplayDriverUninstaller",
-      "choco": "ddu"
-    }
-  ],
-  "WPFTweaks": [
-    "WPFTweaksDebloatAdobe",
-    "WPFTweaksTele",
-    "WPFTweaksConsumerFeatures",
-    "WPFTweaksAH",
-    "WPFTweaksRemoveCopilot",
-    "WPFTweaksEdgeDebloat",
-    "WPFTweaksHiber",
-    "WPFTweaksServices",
-    "WPFTweaksWifi",
-    "WPFTweaksEndTaskOnTaskbar",
-    "WPFTweaksDVR",
-    "WPFTweaksTeredo",
-    "WPFTweaksRecallOff",
-    "WPFTweaksStorage",
-    "WPFTweaksDisableipsix",
-    "WPFTweaksPowershell7Tele",
-    "WPFTweaksDisableExplorerAutoDiscovery",
-    "WPFTweaksDeleteTempFiles",
-    "WPFTweaksLoc",
-    "WPFTweaksDisableLMS1",
-    "WPFTweaksHome"
-  ],
-  "WPFFeature": [
-    "WPFFeaturesdotnet",
-    "WPFFeaturenfs"
-  ]
+    "WPFTweaks":  [
+                      "WPFTweaksEndTaskOnTaskbar",
+                      "WPFTweaksDisplay",
+                      "WPFTweaksDisableLMS1",
+                      "WPFTweaksRemoveHome",
+                      "WPFTweaksDebloatAdobe",
+                      "WPFTweaksTeredo",
+                      "WPFTweaksPowershell7Tele",
+                      "WPFTweaksAH",
+                      "WPFTweaksServices",
+                      "WPFTweaksConsumerFeatures",
+                      "WPFTweaksRemoveCopilot",
+                      "WPFTweaksDisableipsix",
+                      "WPFTweaksEdgeDebloat",
+                      "WPFTweaksWifi",
+                      "WPFTweaksDeleteTempFiles",
+                      "WPFTweaksTele",
+                      "WPFTweaksDisableBGapps",
+                      "WPFTweaksHiber",
+                      "WPFTweaksHome",
+                      "WPFTweaksRemoveGallery",
+                      "WPFTweaksRemoveOnedrive",
+                      "WPFTweaksRightClickMenu",
+                      "WPFTweaksIPv46",
+                      "WPFTweaksRazerBlock",
+                      "WPFTweaksRecallOff",
+                      "WPFTweaksLoc",
+                      "WPFTweaksDVR",
+                      "WPFTweaksStorage",
+                      "WPFTweaksDisableExplorerAutoDiscovery"
+                  ],
+    "Install":  [
+                    {
+                        "winget":  "RustDesk.RustDesk",
+                        "choco":  "rustdesk.portable"
+                    },
+                    {
+                        "winget":  "7zip.7zip",
+                        "choco":  "7zip"
+                    },
+                    {
+                        "winget":  "Discord.Discord",
+                        "choco":  "discord"
+                    },
+                    {
+                        "winget":  "Valve.Steam",
+                        "choco":  "steam-client"
+                    },
+                    {
+                        "winget":  "Notepad++.Notepad++",
+                        "choco":  "notepadplusplus"
+                    },
+                    {
+                        "winget":  "VideoLAN.VLC",
+                        "choco":  "vlc"
+                    },
+                    {
+                        "winget":  "Wagnardsoft.DisplayDriverUninstaller",
+                        "choco":  "ddu"
+                    },
+                    {
+                        "winget":  "GlavSoft.TightVNC",
+                        "choco":  "TightVNC"
+                    },
+                    {
+                        "winget":  "Google.Chrome",
+                        "choco":  "googlechrome"
+                    }
+                ],
+    "WPFInstall":  [
+                       "WPFInstallrustdesk",
+                       "WPFInstall7zip",
+                       "WPFInstalldiscord",
+                       "WPFInstallsteam",
+                       "WPFInstallnotepadplus",
+                       "WPFInstallvlc",
+                       "WPFInstallddu",
+                       "WPFInstalltightvnc",
+                       "WPFInstallchrome"
+                   ],
+    "WPFFeature":  [
+                       "WPFFeaturenfs"
+                   ]
 }

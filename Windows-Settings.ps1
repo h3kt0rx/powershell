@@ -69,87 +69,87 @@ Write-Host "Done." -ForegroundColor Green
 ############################################################################################################################################################
 <# Remove Gamebar #>
 ############################################################################################################################################################
-Write-Host "Removing Gamebar"  -ForegroundColor Cyan
-# disable gamebar regedit
-reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d "0" /f | Out-Null
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d "0" /f | Out-Null
-# disable open xbox game bar using game controller regedit
-reg add "HKCU\Software\Microsoft\GameBar" /v "UseNexusForGameBarEnabled" /t REG_DWORD /d "0" /f | Out-Null
-# disable gameinput service regedit
-reg add "HKLM\SYSTEM\ControlSet001\Services\GameInputSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# disable gamedvr and broadcast user service regedit
-reg add "HKLM\SYSTEM\ControlSet001\Services\BcastDVRUserService" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# disable xbox accessory management service regedit
-reg add "HKLM\SYSTEM\ControlSet001\Services\XboxGipSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# disable xbox live auth manager service regedit
-reg add "HKLM\SYSTEM\ControlSet001\Services\XblAuthManager" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# disable xbox live game save service regedit
-reg add "HKLM\SYSTEM\ControlSet001\Services\XblGameSave" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# disable xbox live networking service regedit
-reg add "HKLM\SYSTEM\ControlSet001\Services\XboxNetApiSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-Write-Host "Done." -ForegroundColor Green
-# disable ms-gamebar notifications with xbox controller plugged in regedit
-Write-Host "Disabling Game Bar Notifications Triggered by Xbox Controller" -ForegroundColor Cyan
-# ms-gamebar
-reg delete "HKCR\ms-gamebar" /f
-reg add "HKCR\ms-gamebar" /ve /d "URL:ms-gamebar" /f
-reg add "HKCR\ms-gamebar" /v "URL Protocol" /t REG_SZ /d "" /f
-reg add "HKCR\ms-gamebar" /v "NoOpenWith" /t REG_SZ /d "" /f
-reg add "HKCR\ms-gamebar\shell\open\command" /ve /d '\"%SystemRoot%\\System32\\systray.exe\"' /f
-# ms-gamebarservices
-reg delete "HKCR\ms-gamebarservices" /f
-reg add "HKCR\ms-gamebarservices" /ve /d "URL:ms-gamebarservices" /f
-reg add "HKCR\ms-gamebarservices" /v "URL Protocol" /t REG_SZ /d "" /f
-reg add "HKCR\ms-gamebarservices" /v "NoOpenWith" /t REG_SZ /d "" /f
-reg add "HKCR\ms-gamebarservices\shell\open\command" /ve /d '\"%SystemRoot%\\System32\\systray.exe\"' /f
-# ms-gamingoverlay
-reg delete "HKCR\ms-gamingoverlay" /f
-reg add "HKCR\ms-gamingoverlay" /ve /d "URL:ms-gamingoverlay" /f
-reg add "HKCR\ms-gamingoverlay" /v "URL Protocol" /t REG_SZ /d "" /f
-reg add "HKCR\ms-gamingoverlay" /v "NoOpenWith" /t REG_SZ /d "" /f
-reg add "HKCR\ms-gamingoverlay\shell\open\command" /ve /d '\"%SystemRoot%\System32\systray.exe\"' /f
-# stop gamebar running
-Stop-Process -Force -Name GameBar -ErrorAction SilentlyContinue | Out-Null
-# uninstall gamebar & xbox apps
-Get-AppxPackage -allusers *Microsoft.GamingApp* | Remove-AppxPackage
-Get-AppxPackage -allusers *Microsoft.Xbox.TCUI* | Remove-AppxPackage
-Get-AppxPackage -allusers *Microsoft.XboxApp* | Remove-AppxPackage
-Get-AppxPackage -allusers *Microsoft.XboxGameOverlay* | Remove-AppxPackage
-Get-AppxPackage -allusers *Microsoft.XboxGamingOverlay* | Remove-AppxPackage
-Get-AppxPackage -allusers *Microsoft.XboxIdentityProvider* | Remove-AppxPackage
-Get-AppxPackage -allusers *Microsoft.XboxSpeechToTextOverlay* | Remove-AppxPackage
-Write-Host "Done." -ForegroundColor Green
+# Write-Host "Removing Gamebar"  -ForegroundColor Cyan
+# # disable gamebar regedit
+# reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d "0" /f | Out-Null
+# reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d "0" /f | Out-Null
+# # disable open xbox game bar using game controller regedit
+# reg add "HKCU\Software\Microsoft\GameBar" /v "UseNexusForGameBarEnabled" /t REG_DWORD /d "0" /f | Out-Null
+# # disable gameinput service regedit
+# reg add "HKLM\SYSTEM\ControlSet001\Services\GameInputSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# # disable gamedvr and broadcast user service regedit
+# reg add "HKLM\SYSTEM\ControlSet001\Services\BcastDVRUserService" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# # disable xbox accessory management service regedit
+# reg add "HKLM\SYSTEM\ControlSet001\Services\XboxGipSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# # disable xbox live auth manager service regedit
+# reg add "HKLM\SYSTEM\ControlSet001\Services\XblAuthManager" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# # disable xbox live game save service regedit
+# reg add "HKLM\SYSTEM\ControlSet001\Services\XblGameSave" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# # disable xbox live networking service regedit
+# reg add "HKLM\SYSTEM\ControlSet001\Services\XboxNetApiSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
+# Write-Host "Done." -ForegroundColor Green
+# # disable ms-gamebar notifications with xbox controller plugged in regedit
+# Write-Host "Disabling Game Bar Notifications Triggered by Xbox Controller" -ForegroundColor Cyan
+# # ms-gamebar
+# reg delete "HKCR\ms-gamebar" /f
+# reg add "HKCR\ms-gamebar" /ve /d "URL:ms-gamebar" /f
+# reg add "HKCR\ms-gamebar" /v "URL Protocol" /t REG_SZ /d "" /f
+# reg add "HKCR\ms-gamebar" /v "NoOpenWith" /t REG_SZ /d "" /f
+# reg add "HKCR\ms-gamebar\shell\open\command" /ve /d '\"%SystemRoot%\\System32\\systray.exe\"' /f
+# # ms-gamebarservices
+# reg delete "HKCR\ms-gamebarservices" /f
+# reg add "HKCR\ms-gamebarservices" /ve /d "URL:ms-gamebarservices" /f
+# reg add "HKCR\ms-gamebarservices" /v "URL Protocol" /t REG_SZ /d "" /f
+# reg add "HKCR\ms-gamebarservices" /v "NoOpenWith" /t REG_SZ /d "" /f
+# reg add "HKCR\ms-gamebarservices\shell\open\command" /ve /d '\"%SystemRoot%\\System32\\systray.exe\"' /f
+# # ms-gamingoverlay
+# reg delete "HKCR\ms-gamingoverlay" /f
+# reg add "HKCR\ms-gamingoverlay" /ve /d "URL:ms-gamingoverlay" /f
+# reg add "HKCR\ms-gamingoverlay" /v "URL Protocol" /t REG_SZ /d "" /f
+# reg add "HKCR\ms-gamingoverlay" /v "NoOpenWith" /t REG_SZ /d "" /f
+# reg add "HKCR\ms-gamingoverlay\shell\open\command" /ve /d '\"%SystemRoot%\System32\systray.exe\"' /f
+# # stop gamebar running
+# Stop-Process -Force -Name GameBar -ErrorAction SilentlyContinue | Out-Null
+# # uninstall gamebar & xbox apps
+# Get-AppxPackage -allusers *Microsoft.GamingApp* | Remove-AppxPackage
+# Get-AppxPackage -allusers *Microsoft.Xbox.TCUI* | Remove-AppxPackage
+# Get-AppxPackage -allusers *Microsoft.XboxApp* | Remove-AppxPackage
+# Get-AppxPackage -allusers *Microsoft.XboxGameOverlay* | Remove-AppxPackage
+# Get-AppxPackage -allusers *Microsoft.XboxGamingOverlay* | Remove-AppxPackage
+# Get-AppxPackage -allusers *Microsoft.XboxIdentityProvider* | Remove-AppxPackage
+# Get-AppxPackage -allusers *Microsoft.XboxSpeechToTextOverlay* | Remove-AppxPackage
+# Write-Host "Done." -ForegroundColor Green
 
 ############################################################################################################################################################
 <# Registry #>
 ############################################################################################################################################################
-Write-Host "Running Registry Tweaks" -ForegroundColor Cyan
+# Write-Host "Running Registry Tweaks" -ForegroundColor Cyan
 
-#--------------------------------
-# APPEARANCE AND PERSONALIZATION
-#--------------------------------
+# #--------------------------------
+# # APPEARANCE AND PERSONALIZATION
+# #--------------------------------
 
-# Hide frequent folders in Quick Access
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer" /v "ShowFrequent" /t REG_DWORD /d 0 /f
-# Show file-name extensions
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f
-# Disable search history
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings" /v "IsDeviceSearchHistoryEnabled" /t REG_DWORD /d 0 /f
+# # Hide frequent folders in Quick Access
+# reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer" /v "ShowFrequent" /t REG_DWORD /d 0 /f
+# # Show file-name extensions
+# reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f
+# # Disable search history
+# reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings" /v "IsDeviceSearchHistoryEnabled" /t REG_DWORD /d 0 /f
 
-#--------
-# GAMING
-#--------
+# #--------
+# # GAMING
+# #--------
 
-# Disable the Game Bar to prevent its use
-reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d 0 /f
-# Disable app capture feature in Game DVR
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f
+# # Disable the Game Bar to prevent its use
+# reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d 0 /f
+# # Disable app capture feature in Game DVR
+# reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f
 
 
 #---------------------------
 # FASTER SHUTDOWN TWEAKS
 #---------------------------
-
+Write-Host "Running Registry Tweaks for Faster Shutdown" -ForegroundColor Cyan
 # Force hung apps to close faster
 reg add "HKCU\Control Panel\Desktop" /v "AutoEndTasks" /t REG_SZ /d "1" /f
 # Set hung app timeout
@@ -158,12 +158,12 @@ reg add "HKCU\Control Panel\Desktop" /v "HungAppTimeout" /t REG_SZ /d "1000" /f
 reg add "HKCU\Control Panel\Desktop" /v "WaitToKillAppTimeout" /t REG_SZ /d "1000" /f
 # Set wait-to-kill time for services
 reg add "HKLM\SYSTEM\CurrentControlSet\Control" /v "WaitToKillServiceTimeout" /t REG_SZ /d "1000" /f
-
+Write-Host "Done." -ForegroundColor Green
 
 #-------
 # MOUSE
 #-------
-
+Write-Host "Running Registry Tweaks for Mouse" -ForegroundColor Cyan
 # Disable Enhance Pointer Precision
 reg add "HKCU\Control Panel\Mouse" /v "MouseSpeed" /t REG_SZ /d "0" /f
 reg add "HKCU\Control Panel\Mouse" /v "MouseThreshold1" /t REG_SZ /d "0" /f
@@ -174,106 +174,7 @@ reg add "HKCU\Control Panel\Mouse" /v "MouseThreshold2" /t REG_SZ /d "0" /f
 reg add "HKCU\Control Panel\Mouse" /v "MouseSensitivity" /t REG_SZ /d "10" /f
 reg add "HKCU\Control Panel\Mouse" /v "SmoothMouseXCurve" /t REG_BINARY /d 0000000000000000c0cc0c0000000000809919000000000406626000000000 /f
 reg add "HKCU\Control Panel\Mouse" /v "SmoothMouseYCurve" /t REG_BINARY /d 0000000000000000000038000000000000007000000000000000a80000000000e0000000000000 /f
-
 Write-Host "Done." -ForegroundColor Green
-
-############################################################################################################################################################
-<# C++ Installation #>
-############################################################################################################################################################
-$install = Read-Host "Do you want to install C++ Redistributable dependencies for games? (Y/N)"
-if ($install -match "[Yy]") {
-    Write-Host "Installing C++ for running applications" -ForegroundColor Cyan
-
-    function Get-FileFromWeb {
-        param (
-            [Parameter(Mandatory)][string]$URL, 
-            [Parameter(Mandatory)][string]$File
-        )
-        function Show-Progress {
-            param (
-                [Parameter(Mandatory)][Single]$TotalValue, 
-                [Parameter(Mandatory)][Single]$CurrentValue, 
-                [Parameter(Mandatory)][string]$ProgressText, 
-                [Parameter()][int]$BarSize = 10, 
-                [Parameter()][switch]$Complete
-            )
-            $percent = $CurrentValue / $TotalValue
-            $percentComplete = $percent * 100
-            if ($psISE) { 
-                Write-Progress "$ProgressText" -id 0 -percentComplete $percentComplete 
-            } else { 
-                Write-Host -NoNewLine "`r$ProgressText $(''.PadRight($BarSize * $percent, [char]9608).PadRight($BarSize, [char]9617)) $($percentComplete.ToString('##0.00').PadLeft(6)) % " 
-            }
-        }
-        try {
-            $request = [System.Net.HttpWebRequest]::Create($URL)
-            $response = $request.GetResponse()
-            if ($response.StatusCode -eq 401 -or $response.StatusCode -eq 403 -or $response.StatusCode -eq 404) { 
-                throw "Remote file either doesn't exist, is unauthorized, or is forbidden for '$URL'." 
-            }
-            if ($File -match '^\.\\') { 
-                $File = Join-Path (Get-Location -PSProvider 'FileSystem') ($File -Split '^\.')[1] 
-            }
-            if ($File -and !(Split-Path $File)) { 
-                $File = Join-Path (Get-Location -PSProvider 'FileSystem') $File 
-            }
-            if ($File) { 
-                $fileDirectory = $([System.IO.Path]::GetDirectoryName($File)); 
-                if (!(Test-Path($fileDirectory))) { 
-                    [System.IO.Directory]::CreateDirectory($fileDirectory) | Out-Null 
-                } 
-            }
-            [long]$fullSize = $response.ContentLength
-            [byte[]]$buffer = new-object byte[] 1048576
-            [long]$total = [long]$count = 0
-            $reader = $response.GetResponseStream()
-            $writer = new-object System.IO.FileStream $File, 'Create'
-            do {
-                $count = $reader.Read($buffer, 0, $buffer.Length)
-                $writer.Write($buffer, 0, $count)
-                $total += $count
-                if ($fullSize -gt 0) { Show-Progress -TotalValue $fullSize -CurrentValue $total -ProgressText " $($File.Name)" }
-            } while ($count -gt 0)
-        }
-        finally {
-            $reader.Close()
-            $writer.Close()
-        }
-    }
-
-    # Download and install C++ Redistributables
-    $files = @{
-        "https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x86.EXE" = "$env:TEMP\vcredist2005_x86.exe"
-        "https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x64.EXE" = "$env:TEMP\vcredist2005_x64.exe"
-        "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe" = "$env:TEMP\vcredist2008_x86.exe"
-        "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x64.exe" = "$env:TEMP\vcredist2008_x64.exe"
-        "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe" = "$env:TEMP\vcredist2010_x86.exe"
-        "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe" = "$env:TEMP\vcredist2010_x64.exe"
-        "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe" = "$env:TEMP\vcredist2012_x86.exe"
-        "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe" = "$env:TEMP\vcredist2012_x64.exe"
-        "https://aka.ms/highdpimfc2013x86enu" = "$env:TEMP\vcredist2013_x86.exe"
-        "https://aka.ms/highdpimfc2013x64enu" = "$env:TEMP\vcredist2013_x64.exe"
-        "https://aka.ms/vs/17/release/vc_redist.x86.exe" = "$env:TEMP\vcredist2015_2017_2019_2022_x86.exe"
-        "https://aka.ms/vs/17/release/vc_redist.x64.exe" = "$env:TEMP\vcredist2015_2017_2019_2022_x64.exe"
-    }
-
-    foreach ($url in $files.Keys) {
-        Get-FileFromWeb -URL $url -File $files[$url]
-    }
-
-    # Start installers
-    $arguments = @("/q", "/qb", "/passive /norestart")
-    $files.Values | ForEach-Object {
-        $argIndex = 0
-        if ($_ -match "2008") { $argIndex = 1 }
-        elseif ($_ -match "2010|2012|2013|2015|2017|2019|2022") { $argIndex = 2 }
-        Start-Process -wait $_ -ArgumentList $arguments[$argIndex]
-    }
-
-    Write-Host "Done." -ForegroundColor Green
-} else {
-    Write-Host "Installation Skipped." -ForegroundColor Cyan
-}
 
 ############################################################################################################################################################
 <# Direct X Installation #>
@@ -395,219 +296,219 @@ switch ($choice) {
 #fiio
 #autodesk fusion
 #davinci resolve
- ############################################################################################################################################################
+############################################################################################################################################################
 <# Timer Resolution #>
 ############################################################################################################################################################
-Write-Host "Installing: Set Timer Resolution Service" -ForegroundColor Cyan
-# create .cs file
-$MultilineComment = @"
-using System;
-using System.Runtime.InteropServices;
-using System.ServiceProcess;
-using System.ComponentModel;
-using System.Configuration.Install;
-using System.Collections.Generic;
-using System.Reflection;
-using System.IO;
-using System.Management;
-using System.Threading;
-using System.Diagnostics;
-[assembly: AssemblyVersion("2.1")]
-[assembly: AssemblyProduct("Set Timer Resolution service")]
-namespace WindowsService
-{
-    class WindowsService : ServiceBase
-    {
-        public WindowsService()
-        {
-            this.ServiceName = "STR";
-            this.EventLog.Log = "Application";
-            this.CanStop = true;
-            this.CanHandlePowerEvent = false;
-            this.CanHandleSessionChangeEvent = false;
-            this.CanPauseAndContinue = false;
-            this.CanShutdown = false;
-        }
-        static void Main()
-        {
-            ServiceBase.Run(new WindowsService());
-        }
-        protected override void OnStart(string[] args)
-        {
-            base.OnStart(args);
-            ReadProcessList();
-            NtQueryTimerResolution(out this.MininumResolution, out this.MaximumResolution, out this.DefaultResolution);
-            if(null != this.EventLog)
-                try { this.EventLog.WriteEntry(String.Format("Minimum={0}; Maximum={1}; Default={2}; Processes='{3}'", this.MininumResolution, this.MaximumResolution, this.DefaultResolution, null != this.ProcessesNames ? String.Join("','", this.ProcessesNames) : "")); }
-                catch {}
-            if(null == this.ProcessesNames)
-            {
-                SetMaximumResolution();
-                return;
-            }
-            if(0 == this.ProcessesNames.Count)
-            {
-                return;
-            }
-            this.ProcessStartDelegate = new OnProcessStart(this.ProcessStarted);
-            try
-            {
-                String query = String.Format("SELECT * FROM __InstanceCreationEvent WITHIN 0.5 WHERE (TargetInstance isa \"Win32_Process\") AND (TargetInstance.Name=\"{0}\")", String.Join("\" OR TargetInstance.Name=\"", this.ProcessesNames));
-                this.startWatch = new ManagementEventWatcher(query);
-                this.startWatch.EventArrived += this.startWatch_EventArrived;
-                this.startWatch.Start();
-            }
-            catch(Exception ee)
-            {
-                if(null != this.EventLog)
-                    try { this.EventLog.WriteEntry(ee.ToString(), EventLogEntryType.Error); }
-                    catch {}
-            }
-        }
-        protected override void OnStop()
-        {
-            if(null != this.startWatch)
-            {
-                this.startWatch.Stop();
-            }
+# Write-Host "Installing: Set Timer Resolution Service" -ForegroundColor Cyan
+# # create .cs file
+# $MultilineComment = @"
+# using System;
+# using System.Runtime.InteropServices;
+# using System.ServiceProcess;
+# using System.ComponentModel;
+# using System.Configuration.Install;
+# using System.Collections.Generic;
+# using System.Reflection;
+# using System.IO;
+# using System.Management;
+# using System.Threading;
+# using System.Diagnostics;
+# [assembly: AssemblyVersion("2.1")]
+# [assembly: AssemblyProduct("Set Timer Resolution service")]
+# namespace WindowsService
+# {
+#     class WindowsService : ServiceBase
+#     {
+#         public WindowsService()
+#         {
+#             this.ServiceName = "STR";
+#             this.EventLog.Log = "Application";
+#             this.CanStop = true;
+#             this.CanHandlePowerEvent = false;
+#             this.CanHandleSessionChangeEvent = false;
+#             this.CanPauseAndContinue = false;
+#             this.CanShutdown = false;
+#         }
+#         static void Main()
+#         {
+#             ServiceBase.Run(new WindowsService());
+#         }
+#         protected override void OnStart(string[] args)
+#         {
+#             base.OnStart(args);
+#             ReadProcessList();
+#             NtQueryTimerResolution(out this.MininumResolution, out this.MaximumResolution, out this.DefaultResolution);
+#             if(null != this.EventLog)
+#                 try { this.EventLog.WriteEntry(String.Format("Minimum={0}; Maximum={1}; Default={2}; Processes='{3}'", this.MininumResolution, this.MaximumResolution, this.DefaultResolution, null != this.ProcessesNames ? String.Join("','", this.ProcessesNames) : "")); }
+#                 catch {}
+#             if(null == this.ProcessesNames)
+#             {
+#                 SetMaximumResolution();
+#                 return;
+#             }
+#             if(0 == this.ProcessesNames.Count)
+#             {
+#                 return;
+#             }
+#             this.ProcessStartDelegate = new OnProcessStart(this.ProcessStarted);
+#             try
+#             {
+#                 String query = String.Format("SELECT * FROM __InstanceCreationEvent WITHIN 0.5 WHERE (TargetInstance isa \"Win32_Process\") AND (TargetInstance.Name=\"{0}\")", String.Join("\" OR TargetInstance.Name=\"", this.ProcessesNames));
+#                 this.startWatch = new ManagementEventWatcher(query);
+#                 this.startWatch.EventArrived += this.startWatch_EventArrived;
+#                 this.startWatch.Start();
+#             }
+#             catch(Exception ee)
+#             {
+#                 if(null != this.EventLog)
+#                     try { this.EventLog.WriteEntry(ee.ToString(), EventLogEntryType.Error); }
+#                     catch {}
+#             }
+#         }
+#         protected override void OnStop()
+#         {
+#             if(null != this.startWatch)
+#             {
+#                 this.startWatch.Stop();
+#             }
 
-            base.OnStop();
-        }
-        ManagementEventWatcher startWatch;
-        void startWatch_EventArrived(object sender, EventArrivedEventArgs e) 
-        {
-            try
-            {
-                ManagementBaseObject process = (ManagementBaseObject)e.NewEvent.Properties["TargetInstance"].Value;
-                UInt32 processId = (UInt32)process.Properties["ProcessId"].Value;
-                this.ProcessStartDelegate.BeginInvoke(processId, null, null);
-            } 
-            catch(Exception ee) 
-            {
-                if(null != this.EventLog)
-                    try { this.EventLog.WriteEntry(ee.ToString(), EventLogEntryType.Warning); }
-                    catch {}
+#             base.OnStop();
+#         }
+#         ManagementEventWatcher startWatch;
+#         void startWatch_EventArrived(object sender, EventArrivedEventArgs e) 
+#         {
+#             try
+#             {
+#                 ManagementBaseObject process = (ManagementBaseObject)e.NewEvent.Properties["TargetInstance"].Value;
+#                 UInt32 processId = (UInt32)process.Properties["ProcessId"].Value;
+#                 this.ProcessStartDelegate.BeginInvoke(processId, null, null);
+#             } 
+#             catch(Exception ee) 
+#             {
+#                 if(null != this.EventLog)
+#                     try { this.EventLog.WriteEntry(ee.ToString(), EventLogEntryType.Warning); }
+#                     catch {}
 
-            }
-        }
-        [DllImport("kernel32.dll", SetLastError=true)]
-        static extern Int32 WaitForSingleObject(IntPtr Handle, Int32 Milliseconds);
-        [DllImport("kernel32.dll", SetLastError=true)]
-        static extern IntPtr OpenProcess(UInt32 DesiredAccess, Int32 InheritHandle, UInt32 ProcessId);
-        [DllImport("kernel32.dll", SetLastError=true)]
-        static extern Int32 CloseHandle(IntPtr Handle);
-        const UInt32 SYNCHRONIZE = 0x00100000;
-        delegate void OnProcessStart(UInt32 processId);
-        OnProcessStart ProcessStartDelegate = null;
-        void ProcessStarted(UInt32 processId)
-        {
-            SetMaximumResolution();
-            IntPtr processHandle = IntPtr.Zero;
-            try
-            {
-                processHandle = OpenProcess(SYNCHRONIZE, 0, processId);
-                if(processHandle != IntPtr.Zero)
-                    WaitForSingleObject(processHandle, -1);
-            } 
-            catch(Exception ee) 
-            {
-                if(null != this.EventLog)
-                    try { this.EventLog.WriteEntry(ee.ToString(), EventLogEntryType.Warning); }
-                    catch {}
-            }
-            finally
-            {
-                if(processHandle != IntPtr.Zero)
-                    CloseHandle(processHandle); 
-            }
-            SetDefaultResolution();
-        }
-        List<String> ProcessesNames = null;
-        void ReadProcessList()
-        {
-            String iniFilePath = Assembly.GetExecutingAssembly().Location + ".ini";
-            if(File.Exists(iniFilePath))
-            {
-                this.ProcessesNames = new List<String>();
-                String[] iniFileLines = File.ReadAllLines(iniFilePath);
-                foreach(var line in iniFileLines)
-                {
-                    String[] names = line.Split(new char[] {',', ' ', ';'} , StringSplitOptions.RemoveEmptyEntries);
-                    foreach(var name in names)
-                    {
-                        String lwr_name = name.ToLower();
-                        if(!lwr_name.EndsWith(".exe"))
-                            lwr_name += ".exe";
-                        if(!this.ProcessesNames.Contains(lwr_name))
-                            this.ProcessesNames.Add(lwr_name);
-                    }
-                }
-            }
-        }
-        [DllImport("ntdll.dll", SetLastError=true)]
-        static extern int NtSetTimerResolution(uint DesiredResolution, bool SetResolution, out uint CurrentResolution);
-        [DllImport("ntdll.dll", SetLastError=true)]
-        static extern int NtQueryTimerResolution(out uint MinimumResolution, out uint MaximumResolution, out uint ActualResolution);
-        uint DefaultResolution = 0;
-        uint MininumResolution = 0;
-        uint MaximumResolution = 0;
-        long processCounter = 0;
-        void SetMaximumResolution()
-        {
-            long counter = Interlocked.Increment(ref this.processCounter);
-            if(counter <= 1)
-            {
-                uint actual = 0;
-                NtSetTimerResolution(this.MaximumResolution, true, out actual);
-                if(null != this.EventLog)
-                    try { this.EventLog.WriteEntry(String.Format("Actual resolution = {0}", actual)); }
-                    catch {}
-            }
-        }
-        void SetDefaultResolution()
-        {
-            long counter = Interlocked.Decrement(ref this.processCounter);
-            if(counter < 1)
-            {
-                uint actual = 0;
-                NtSetTimerResolution(this.DefaultResolution, true, out actual);
-                if(null != this.EventLog)
-                    try { this.EventLog.WriteEntry(String.Format("Actual resolution = {0}", actual)); }
-                    catch {}
-            }
-        }
-    }
-    [RunInstaller(true)]
-    public class WindowsServiceInstaller : Installer
-    {
-        public WindowsServiceInstaller()
-        {
-            ServiceProcessInstaller serviceProcessInstaller = 
-                               new ServiceProcessInstaller();
-            ServiceInstaller serviceInstaller = new ServiceInstaller();
-            serviceProcessInstaller.Account = ServiceAccount.LocalSystem;
-            serviceProcessInstaller.Username = null;
-            serviceProcessInstaller.Password = null;
-            serviceInstaller.DisplayName = "Set Timer Resolution Service";
-            serviceInstaller.StartType = ServiceStartMode.Automatic;
-            serviceInstaller.ServiceName = "STR";
-            this.Installers.Add(serviceProcessInstaller);
-            this.Installers.Add(serviceInstaller);
-        }
-    }
-}
-"@
-Set-Content -Path "$env:C:\Windows\SetTimerResolutionService.cs" -Value $MultilineComment -Force
-# compile and create service
-Start-Process -Wait "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe" -ArgumentList "-out:C:\Windows\SetTimerResolutionService.exe C:\Windows\SetTimerResolutionService.cs" -WindowStyle Hidden
-# delete file
-Remove-Item "$env:C:\Windows\SetTimerResolutionService.cs" -ErrorAction SilentlyContinue | Out-Null
-# install and start service
-New-Service -Name "Set Timer Resolution Service" -BinaryPathName "$env:C:\Windows\SetTimerResolutionService.exe" -ErrorAction SilentlyContinue | Out-Null
-Set-Service -Name "Set Timer Resolution Service" -StartupType Automatic -ErrorAction SilentlyContinue | Out-Null
-Set-Service -Name "Set Timer Resolution Service" -Status Running -ErrorAction SilentlyContinue | Out-Null
-# fix timer resolution regedit
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" /v "GlobalTimerResolutionRequests" /t REG_DWORD /d "1" /f | Out-Null
-Write-Host "Done."  -ForegroundColor Green
-Write-Host "Restart your computer for settings to take effect." -ForegroundColor Red
-pause
+#             }
+#         }
+#         [DllImport("kernel32.dll", SetLastError=true)]
+#         static extern Int32 WaitForSingleObject(IntPtr Handle, Int32 Milliseconds);
+#         [DllImport("kernel32.dll", SetLastError=true)]
+#         static extern IntPtr OpenProcess(UInt32 DesiredAccess, Int32 InheritHandle, UInt32 ProcessId);
+#         [DllImport("kernel32.dll", SetLastError=true)]
+#         static extern Int32 CloseHandle(IntPtr Handle);
+#         const UInt32 SYNCHRONIZE = 0x00100000;
+#         delegate void OnProcessStart(UInt32 processId);
+#         OnProcessStart ProcessStartDelegate = null;
+#         void ProcessStarted(UInt32 processId)
+#         {
+#             SetMaximumResolution();
+#             IntPtr processHandle = IntPtr.Zero;
+#             try
+#             {
+#                 processHandle = OpenProcess(SYNCHRONIZE, 0, processId);
+#                 if(processHandle != IntPtr.Zero)
+#                     WaitForSingleObject(processHandle, -1);
+#             } 
+#             catch(Exception ee) 
+#             {
+#                 if(null != this.EventLog)
+#                     try { this.EventLog.WriteEntry(ee.ToString(), EventLogEntryType.Warning); }
+#                     catch {}
+#             }
+#             finally
+#             {
+#                 if(processHandle != IntPtr.Zero)
+#                     CloseHandle(processHandle); 
+#             }
+#             SetDefaultResolution();
+#         }
+#         List<String> ProcessesNames = null;
+#         void ReadProcessList()
+#         {
+#             String iniFilePath = Assembly.GetExecutingAssembly().Location + ".ini";
+#             if(File.Exists(iniFilePath))
+#             {
+#                 this.ProcessesNames = new List<String>();
+#                 String[] iniFileLines = File.ReadAllLines(iniFilePath);
+#                 foreach(var line in iniFileLines)
+#                 {
+#                     String[] names = line.Split(new char[] {',', ' ', ';'} , StringSplitOptions.RemoveEmptyEntries);
+#                     foreach(var name in names)
+#                     {
+#                         String lwr_name = name.ToLower();
+#                         if(!lwr_name.EndsWith(".exe"))
+#                             lwr_name += ".exe";
+#                         if(!this.ProcessesNames.Contains(lwr_name))
+#                             this.ProcessesNames.Add(lwr_name);
+#                     }
+#                 }
+#             }
+#         }
+#         [DllImport("ntdll.dll", SetLastError=true)]
+#         static extern int NtSetTimerResolution(uint DesiredResolution, bool SetResolution, out uint CurrentResolution);
+#         [DllImport("ntdll.dll", SetLastError=true)]
+#         static extern int NtQueryTimerResolution(out uint MinimumResolution, out uint MaximumResolution, out uint ActualResolution);
+#         uint DefaultResolution = 0;
+#         uint MininumResolution = 0;
+#         uint MaximumResolution = 0;
+#         long processCounter = 0;
+#         void SetMaximumResolution()
+#         {
+#             long counter = Interlocked.Increment(ref this.processCounter);
+#             if(counter <= 1)
+#             {
+#                 uint actual = 0;
+#                 NtSetTimerResolution(this.MaximumResolution, true, out actual);
+#                 if(null != this.EventLog)
+#                     try { this.EventLog.WriteEntry(String.Format("Actual resolution = {0}", actual)); }
+#                     catch {}
+#             }
+#         }
+#         void SetDefaultResolution()
+#         {
+#             long counter = Interlocked.Decrement(ref this.processCounter);
+#             if(counter < 1)
+#             {
+#                 uint actual = 0;
+#                 NtSetTimerResolution(this.DefaultResolution, true, out actual);
+#                 if(null != this.EventLog)
+#                     try { this.EventLog.WriteEntry(String.Format("Actual resolution = {0}", actual)); }
+#                     catch {}
+#             }
+#         }
+#     }
+#     [RunInstaller(true)]
+#     public class WindowsServiceInstaller : Installer
+#     {
+#         public WindowsServiceInstaller()
+#         {
+#             ServiceProcessInstaller serviceProcessInstaller = 
+#                                new ServiceProcessInstaller();
+#             ServiceInstaller serviceInstaller = new ServiceInstaller();
+#             serviceProcessInstaller.Account = ServiceAccount.LocalSystem;
+#             serviceProcessInstaller.Username = null;
+#             serviceProcessInstaller.Password = null;
+#             serviceInstaller.DisplayName = "Set Timer Resolution Service";
+#             serviceInstaller.StartType = ServiceStartMode.Automatic;
+#             serviceInstaller.ServiceName = "STR";
+#             this.Installers.Add(serviceProcessInstaller);
+#             this.Installers.Add(serviceInstaller);
+#         }
+#     }
+# }
+# "@
+# Set-Content -Path "$env:C:\Windows\SetTimerResolutionService.cs" -Value $MultilineComment -Force
+# # compile and create service
+# Start-Process -Wait "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe" -ArgumentList "-out:C:\Windows\SetTimerResolutionService.exe C:\Windows\SetTimerResolutionService.cs" -WindowStyle Hidden
+# # delete file
+# Remove-Item "$env:C:\Windows\SetTimerResolutionService.cs" -ErrorAction SilentlyContinue | Out-Null
+# # install and start service
+# New-Service -Name "Set Timer Resolution Service" -BinaryPathName "$env:C:\Windows\SetTimerResolutionService.exe" -ErrorAction SilentlyContinue | Out-Null
+# Set-Service -Name "Set Timer Resolution Service" -StartupType Automatic -ErrorAction SilentlyContinue | Out-Null
+# Set-Service -Name "Set Timer Resolution Service" -Status Running -ErrorAction SilentlyContinue | Out-Null
+# # fix timer resolution regedit
+# reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" /v "GlobalTimerResolutionRequests" /t REG_DWORD /d "1" /f | Out-Null
+# Write-Host "Done."  -ForegroundColor Green
+# Write-Host "Restart your computer for settings to take effect." -ForegroundColor Red
+# pause
