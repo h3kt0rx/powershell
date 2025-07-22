@@ -66,85 +66,6 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/h3kt0rx/powershell/ref
 Write-Host "Applying personal O&O Shutup 10 Policies"
 Start-Process $OOSU_filepath -ArgumentList "$oosu_config /quiet" -Wait
 Write-Host "Done." -ForegroundColor Green
-############################################################################################################################################################
-<# Remove Gamebar #>
-############################################################################################################################################################
-# Write-Host "Removing Gamebar"  -ForegroundColor Cyan
-# # disable gamebar regedit
-# reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d "0" /f | Out-Null
-# reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d "0" /f | Out-Null
-# # disable open xbox game bar using game controller regedit
-# reg add "HKCU\Software\Microsoft\GameBar" /v "UseNexusForGameBarEnabled" /t REG_DWORD /d "0" /f | Out-Null
-# # disable gameinput service regedit
-# reg add "HKLM\SYSTEM\ControlSet001\Services\GameInputSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# # disable gamedvr and broadcast user service regedit
-# reg add "HKLM\SYSTEM\ControlSet001\Services\BcastDVRUserService" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# # disable xbox accessory management service regedit
-# reg add "HKLM\SYSTEM\ControlSet001\Services\XboxGipSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# # disable xbox live auth manager service regedit
-# reg add "HKLM\SYSTEM\ControlSet001\Services\XblAuthManager" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# # disable xbox live game save service regedit
-# reg add "HKLM\SYSTEM\ControlSet001\Services\XblGameSave" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# # disable xbox live networking service regedit
-# reg add "HKLM\SYSTEM\ControlSet001\Services\XboxNetApiSvc" /v "Start" /t REG_DWORD /d "4" /f | Out-Null
-# Write-Host "Done." -ForegroundColor Green
-# # disable ms-gamebar notifications with xbox controller plugged in regedit
-# Write-Host "Disabling Game Bar Notifications Triggered by Xbox Controller" -ForegroundColor Cyan
-# # ms-gamebar
-# reg delete "HKCR\ms-gamebar" /f
-# reg add "HKCR\ms-gamebar" /ve /d "URL:ms-gamebar" /f
-# reg add "HKCR\ms-gamebar" /v "URL Protocol" /t REG_SZ /d "" /f
-# reg add "HKCR\ms-gamebar" /v "NoOpenWith" /t REG_SZ /d "" /f
-# reg add "HKCR\ms-gamebar\shell\open\command" /ve /d '\"%SystemRoot%\\System32\\systray.exe\"' /f
-# # ms-gamebarservices
-# reg delete "HKCR\ms-gamebarservices" /f
-# reg add "HKCR\ms-gamebarservices" /ve /d "URL:ms-gamebarservices" /f
-# reg add "HKCR\ms-gamebarservices" /v "URL Protocol" /t REG_SZ /d "" /f
-# reg add "HKCR\ms-gamebarservices" /v "NoOpenWith" /t REG_SZ /d "" /f
-# reg add "HKCR\ms-gamebarservices\shell\open\command" /ve /d '\"%SystemRoot%\\System32\\systray.exe\"' /f
-# # ms-gamingoverlay
-# reg delete "HKCR\ms-gamingoverlay" /f
-# reg add "HKCR\ms-gamingoverlay" /ve /d "URL:ms-gamingoverlay" /f
-# reg add "HKCR\ms-gamingoverlay" /v "URL Protocol" /t REG_SZ /d "" /f
-# reg add "HKCR\ms-gamingoverlay" /v "NoOpenWith" /t REG_SZ /d "" /f
-# reg add "HKCR\ms-gamingoverlay\shell\open\command" /ve /d '\"%SystemRoot%\System32\systray.exe\"' /f
-# # stop gamebar running
-# Stop-Process -Force -Name GameBar -ErrorAction SilentlyContinue | Out-Null
-# # uninstall gamebar & xbox apps
-# Get-AppxPackage -allusers *Microsoft.GamingApp* | Remove-AppxPackage
-# Get-AppxPackage -allusers *Microsoft.Xbox.TCUI* | Remove-AppxPackage
-# Get-AppxPackage -allusers *Microsoft.XboxApp* | Remove-AppxPackage
-# Get-AppxPackage -allusers *Microsoft.XboxGameOverlay* | Remove-AppxPackage
-# Get-AppxPackage -allusers *Microsoft.XboxGamingOverlay* | Remove-AppxPackage
-# Get-AppxPackage -allusers *Microsoft.XboxIdentityProvider* | Remove-AppxPackage
-# Get-AppxPackage -allusers *Microsoft.XboxSpeechToTextOverlay* | Remove-AppxPackage
-# Write-Host "Done." -ForegroundColor Green
-
-############################################################################################################################################################
-<# Registry #>
-############################################################################################################################################################
-# Write-Host "Running Registry Tweaks" -ForegroundColor Cyan
-
-# #--------------------------------
-# # APPEARANCE AND PERSONALIZATION
-# #--------------------------------
-
-# # Hide frequent folders in Quick Access
-# reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer" /v "ShowFrequent" /t REG_DWORD /d 0 /f
-# # Show file-name extensions
-# reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f
-# # Disable search history
-# reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\SearchSettings" /v "IsDeviceSearchHistoryEnabled" /t REG_DWORD /d 0 /f
-
-# #--------
-# # GAMING
-# #--------
-
-# # Disable the Game Bar to prevent its use
-# reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d 0 /f
-# # Disable app capture feature in Game DVR
-# reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f
-
 
 #---------------------------
 # FASTER SHUTDOWN TWEAKS
@@ -176,63 +97,7 @@ reg add "HKCU\Control Panel\Mouse" /v "SmoothMouseXCurve" /t REG_BINARY /d 00000
 reg add "HKCU\Control Panel\Mouse" /v "SmoothMouseYCurve" /t REG_BINARY /d 0000000000000000000038000000000000007000000000000000a80000000000e0000000000000 /f
 Write-Host "Done." -ForegroundColor Green
 
-############################################################################################################################################################
-<# Direct X Installation #>
-############################################################################################################################################################
 
-# Ask the user if they want to install DirectX
-$installDirectX = Read-Host "Do you want to install DirectX? (Y/N)"
-
-if ($installDirectX -match '^[Yy]$') {
-    Write-Host "Installing DirectX..." -ForegroundColor Cyan
-
-    # Define the URL and paths
-    $DXFileUri = "https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-AD2AE20B6B14/directx_Jun2010_redist.exe"
-    $DXFileUri2 = "https://www.7-zip.org/a/7z2301-x64.exe"
-    $DXDestination = "$env:TEMP\directx_Jun2010_redist.exe"
-    $DXDestination2 = "$env:TEMP\7-Zip.exe"
-    $DXExtractPath = "$env:TEMP\DirectX_Install"
-
-    # Download DirectX installer
-    Write-Host "Downloading DirectX..." -ForegroundColor Yellow
-    $DXbitsJobObj = Start-BitsTransfer -Source $DXFileUri -Destination $DXDestination
-    $DXbitsJobObj = Start-BitsTransfer -Source $DXFileUri2 -Destination $DXDestination2
-
-    switch ($DXbitsJobObj.JobState) {
-        'Transferred' {
-            Complete-BitsTransfer -BitsJob $DXbitsJobObj
-            break
-        }
-        'Error' {
-            throw 'Error downloading'
-        }
-    }
-
-    # Create the extraction directory if it doesn't exist
-    if (-Not (Test-Path -Path $DXExtractPath)) {
-        New-Item -ItemType Directory -Path $DXExtractPath | Out-Null
-    }
-
-    # Install 7-Zip silently
-    Write-Host "Installing 7-Zip..." -ForegroundColor Yellow
-    Start-Process -Wait "$env:TEMP\7-Zip.exe" /S
-
-    # Extract DirectX installer using 7-Zip
-    Write-Host "Extracting DirectX installer..." -ForegroundColor Yellow
-    cmd /c '"C:\Program Files\7-Zip\7z.exe" x "'$DXDestination'" -o"'$DXExtractPath'" -y' | Out-Null
-
-    # Install DirectX silently
-    Write-Host "Running DirectX setup..." -ForegroundColor Yellow
-    Start-Process "$DXExtractPath\DXSETUP.exe" -ArgumentList "/silent" -Wait
-
-    # Clean up
-    Write-Host "Cleaning up..." -ForegroundColor Yellow
-    Remove-Item -Path $DXDestination -Force
-
-    Write-Host "DirectX installation complete." -ForegroundColor Green
-} else {
-    Write-Host "DirectX installation skipped." -ForegroundColor Cyan
-}
 ############################################################################################################################################################
 <# Run Titus Script #>
 ############################################################################################################################################################
@@ -262,40 +127,12 @@ switch ($choice) {
         Write-Host "Operation cancelled." -ForegroundColor Red
     }
 }
-#iex "& { $(irm https://christitus.com/windev) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"
-############################################################################################################################################################
-# Personal Programs
-############################################################################################################################################################
-# Prompt the user
-# $installPersonalApps = Read-Host "Do you want to install personal applications before running? (Y/N)"
 
-# If the user responds with Y or y, proceed with the installation of personal applications
-# if ($installPersonalApps -eq 'Y' -or $installPersonalApps -eq 'y') {
-#     Write-Output "Installing Chocolatey"
-#     choco install chocolatey-core.extension -y
-
-#     Write-Output "Installing Personal Applications"
-#     choco install discord.install -y
-#     choco install notepadplusplus.install -y
-#     choco install peazip.install -y
-#     choco install vlc.install -y
-#     choco install steam -y
-#     choco install ddu -y
-#     choco install tightvnc -y
-#     choco install rustdesk -y
-# } else {
-#     Write-Output "Skipping Personal Applications installation."
-# }
 
 #Write-Output "Running Spotify Install Script"
 #iex "& { $(iwr -useb 'https://raw.githubusercontent.com/SpotX-Official/spotx-official.github.io/main/run.ps1') } -new_theme"
 
 
-#dolby atmos
-#Peace GUI
-#fiio
-#autodesk fusion
-#davinci resolve
 ############################################################################################################################################################
 <# Timer Resolution #>
 ############################################################################################################################################################
