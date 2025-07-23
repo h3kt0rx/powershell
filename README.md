@@ -8,3 +8,7 @@ WinUtil
 ```
 iwr "https://christitus.com/windev" | iex
 ```
+MAS
+```
+irm https://get.activated.win | iex
+```
