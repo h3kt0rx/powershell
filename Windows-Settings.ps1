@@ -19,29 +19,81 @@ Write-Host "Done." -ForegroundColor Green
 ############################################################################################################################################################
 <# NVIDIA Profile #>
 ############################################################################################################################################################
-Write-Host "Setting NVIDIA Profile" -ForegroundColor Cyan
-# Define URLs
-$zipUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/nvidiaProfileInspector.zip"
-$configUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/custom.nip"
-# Define temporary paths
-$tempDir = "$env:TEMP\nvidiaProfileInspector"
-$zipPath = "$tempDir\nvidiaProfileInspector.zip"
-$extractPath = "$tempDir\nvidiaProfileInspector"
-# Create the directory and suppress output
-New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
-# Download the ZIP file and suppress output
-Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath | Out-Null
-# Extract the ZIP file and suppress output
-Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force | Out-Null
-# Download the configuration file and suppress output
-Invoke-WebRequest -Uri $configUrl -OutFile "$extractPath\custom.nip" | Out-Null
-# Run the command to import the profile silently
-$process = Start-Process -FilePath $extractPath\nvidiaProfileInspector.exe -ArgumentList "-silentImport `"$extractPath\custom.nip`"" -PassThru
-# Wait for the process to exit
-$process.WaitForExit()
-# Clean up
-Remove-Item -Recurse -Force -Path $tempDir
-Write-Host "Done." -ForegroundColor Green
+# Ask for confirmation
+$answer = Read-Host "Do you want to execute the NVIDIA Profile setup script? [Y/N]"
+
+if ($answer -match '^[Yy]') {
+    Write-Host "Setting NVIDIA Profile..." -ForegroundColor Cyan
+
+    # Define URLs
+    $zipUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/nvidiaProfileInspector.zip"
+    $configUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/custom.nip"
+
+    # Define temporary paths
+    $tempDir = "$env:TEMP\nvidiaProfileInspector"
+    $zipPath = "$tempDir\nvidiaProfileInspector.zip"
+    $extractPath = "$tempDir\nvidiaProfileInspector"
+
+    try {
+        # Create the directory
+        New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
+
+        # Download the ZIP file
+        Write-Host "Downloading NVIDIA Profile Inspector..." -ForegroundColor Yellow
+        Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -ErrorAction Stop | Out-Null
+
+        # Extract the ZIP file
+        Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force -ErrorAction Stop | Out-Null
+
+        # Download the configuration file
+        Write-Host "Downloading custom profile..." -ForegroundColor Yellow
+        Invoke-WebRequest -Uri $configUrl -OutFile "$extractPath\custom.nip" -ErrorAction Stop | Out-Null
+
+        # Run the command to import the profile silently
+        Write-Host "Importing NVIDIA profile..." -ForegroundColor Yellow
+        $process = Start-Process -FilePath "$extractPath\nvidiaProfileInspector.exe" `
+                                 -ArgumentList "-silentImport `"$extractPath\custom.nip`"" `
+                                 -PassThru
+        $process.WaitForExit()
+
+        Write-Host "Cleaning up..." -ForegroundColor Yellow
+        Remove-Item -Recurse -Force -Path $tempDir
+
+        Write-Host "Done." -ForegroundColor Green
+    }
+    catch {
+        Write-Host "An error occurred: $_" -ForegroundColor Red
+    }
+}
+else {
+    Write-Host "Operation cancelled by user." -ForegroundColor DarkGray
+}
+
+
+###OLD
+# Write-Host "Setting NVIDIA Profile" -ForegroundColor Cyan
+# # Define URLs
+# $zipUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/nvidiaProfileInspector.zip"
+# $configUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/custom.nip"
+# # Define temporary paths
+# $tempDir = "$env:TEMP\nvidiaProfileInspector"
+# $zipPath = "$tempDir\nvidiaProfileInspector.zip"
+# $extractPath = "$tempDir\nvidiaProfileInspector"
+# # Create the directory and suppress output
+# New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
+# # Download the ZIP file and suppress output
+# Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath | Out-Null
+# # Extract the ZIP file and suppress output
+# Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force | Out-Null
+# # Download the configuration file and suppress output
+# Invoke-WebRequest -Uri $configUrl -OutFile "$extractPath\custom.nip" | Out-Null
+# # Run the command to import the profile silently
+# $process = Start-Process -FilePath $extractPath\nvidiaProfileInspector.exe -ArgumentList "-silentImport `"$extractPath\custom.nip`"" -PassThru
+# # Wait for the process to exit
+# $process.WaitForExit()
+# # Clean up
+# Remove-Item -Recurse -Force -Path $tempDir
+# Write-Host "Done." -ForegroundColor Green
 ############################################################################################################################################################
 <# Script to Disable Core Isolation and Enable Game Mode #>
 ############################################################################################################################################################
