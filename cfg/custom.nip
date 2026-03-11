@@ -192,4 +192,20 @@
       </ProfileSetting>
     </Settings>
   </Profile>
+  <Profile>
+    <ProfileName>Battlefield 6</ProfileName>
+    <Executeables>
+      <string>bf6event.exe</string>
+      <string>battlefieldgame.main_win64_performance.exe</string>
+    </Executeables>
+    <Settings>
+      <ProfileSetting>
+        <SettingNameInfo />
+        <SettingID>983226</SettingID>
+        <SettingValue>1</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+    </Settings>
+  </Profile>
 </ArrayOfProfile>
+
