@@ -58,7 +58,7 @@ if ($answer -match '^[Yy]') {
         Write-Host "Cleaning up..." -ForegroundColor Yellow
         Remove-Item -Recurse -Force -Path $tempDir
 
-        Write-Host "Done." -ForegroundColor Green
+        Write-Host "Setting up fr33thy settings" -ForegroundColor Green
         # turn on disable dynamic pstate
         $subkeys = Get-ChildItem -Path "Registry::HKLM\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}" -Force -ErrorAction SilentlyContinue
         foreach($key in $subkeys){
@@ -102,13 +102,21 @@ if ($answer -match '^[Yy]') {
         cmd /c "reg add `"HKLM\SYSTEM\ControlSet001\Services\nvlddmkm\Parameters\FTS`" /v `"EnableGR535`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
         cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters\FTS`" /v `"EnableGR535`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
 
-        # turn on no scaling for all displays
-        $configKeys = Get-ChildItem -Path "HKLM:\System\ControlSet001\Control\GraphicsDrivers\Configuration" -Recurse -ErrorAction SilentlyContinue
-        foreach ($key in $configKeys) {
-        $scalingValue = Get-ItemProperty -Path $key.PSPath -Name "Scaling" -ErrorAction SilentlyContinue
-        if ($scalingValue) {
-        $regPath = $key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::', '').Replace('HKEY_LOCAL_MACHINE', 'HKLM')
-        Run-Trusted -command "reg add `"$regPath`" /v `"Scaling`" /t REG_DWORD /d `"2`" /f"
+        # # turn on no scaling for all displays
+        # $configKeys = Get-ChildItem -Path "HKLM:\System\ControlSet001\Control\GraphicsDrivers\Configuration" -Recurse -ErrorAction SilentlyContinue
+        # foreach ($key in $configKeys) {
+        # $scalingValue = Get-ItemProperty -Path $key.PSPath -Name "Scaling" -ErrorAction SilentlyContinue
+        # if ($scalingValue) {
+        # $regPath = $key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::', '').Replace('HKEY_LOCAL_MACHINE', 'HKLM')
+        # Run-Trusted -command "reg add `"$regPath`" /v `"Scaling`" /t REG_DWORD /d `"2`" /f"
+        # }
+        foreach ($display in $displays) {
+            $regPath = $display.PSPath -replace 'Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE', 'HKLM:'
+
+            Set-ItemProperty -Path $regPath `
+                -Name "ScalingConfig" `
+                -Value ([byte[]](0xDB,0x02,0x00,0x00,0x10,0x00,0x00,0x00,0x20,0x01,0x00,0x00,0x0E,0x01,0x00,0x00)) `
+                -Type Binary
         }
 }
 
