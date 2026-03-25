@@ -59,6 +59,69 @@ if ($answer -match '^[Yy]') {
         Remove-Item -Recurse -Force -Path $tempDir
 
         Write-Host "Done." -ForegroundColor Green
+        # turn on disable dynamic pstate
+        $subkeys = Get-ChildItem -Path "Registry::HKLM\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}" -Force -ErrorAction SilentlyContinue
+        foreach($key in $subkeys){
+        if ($key -notlike '*Configuration'){
+        reg add "$key" /v "DisableDynamicPstate" /t REG_DWORD /d "1" /f | Out-Null
+        }
+        }
+
+        # disable hdcp
+        $subkeys = Get-ChildItem -Path "Registry::HKLM\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}" -Force -ErrorAction SilentlyContinue
+        foreach($key in $subkeys){
+        if ($key -notlike '*Configuration'){
+        reg add "$key" /v "RMHdcpKeyglobZero" /t REG_DWORD /d "1" /f | Out-Null
+        }
+        }
+
+        # unblock drs files
+        $path = "C:\ProgramData\NVIDIA Corporation\Drs"
+        Get-ChildItem -Path $path -Recurse | Unblock-File
+
+        # set physx to gpu
+        cmd /c "reg add `"HKLM\System\ControlSet001\Services\nvlddmkm\Parameters\Global\NVTweak`" /v `"NvCplPhysxAuto`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+
+        # enable developer settings
+        cmd /c "reg add `"HKLM\System\ControlSet001\Services\nvlddmkm\Parameters\Global\NVTweak`" /v `"NvDevToolsVisible`" /t REG_DWORD /d `"1`" /f >nul 2>&1"
+
+        # allow access to the gpu performance counters to all users
+        $subkeys = Get-ChildItem -Path "Registry::HKLM\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}" -Force -ErrorAction SilentlyContinue
+        foreach($key in $subkeys){
+        if ($key -notlike '*Configuration'){
+        reg add "$key" /v "RmProfilingAdminOnly" /t REG_DWORD /d "0" /f | Out-Null
+        }
+        }
+        cmd /c "reg add `"HKLM\System\ControlSet001\Services\nvlddmkm\Parameters\Global\NVTweak`" /v `"RmProfilingAdminOnly`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+
+        # disable show notification tray icon
+        cmd /c "reg add `"HKCU\Software\NVIDIA Corporation\NvTray`" /v `"StartOnLogin`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+
+        # enable nvidia legacy sharpen
+        cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm\FTS`" /v `"EnableGR535`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+        cmd /c "reg add `"HKLM\SYSTEM\ControlSet001\Services\nvlddmkm\Parameters\FTS`" /v `"EnableGR535`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+        cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters\FTS`" /v `"EnableGR535`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
+
+        # turn on no scaling for all displays
+        $configKeys = Get-ChildItem -Path "HKLM:\System\ControlSet001\Control\GraphicsDrivers\Configuration" -Recurse -ErrorAction SilentlyContinue
+        foreach ($key in $configKeys) {
+        $scalingValue = Get-ItemProperty -Path $key.PSPath -Name "Scaling" -ErrorAction SilentlyContinue
+        if ($scalingValue) {
+        $regPath = $key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::', '').Replace('HKEY_LOCAL_MACHINE', 'HKLM')
+        Run-Trusted -command "reg add `"$regPath`" /v `"Scaling`" /t REG_DWORD /d `"2`" /f"
+        }
+}
+
+# turn on override the scaling mode set by games and programs for all displays
+# perform scaling on display
+$displayDbPath = "HKLM:\System\ControlSet001\Services\nvlddmkm\State\DisplayDatabase"
+if (Test-Path $displayDbPath) {
+$displays = Get-ChildItem -Path $displayDbPath -ErrorAction SilentlyContinue
+foreach ($display in $displays) {
+$regPath = $display.PSPath.Replace('Microsoft.PowerShell.Core\Registry::', '').Replace('HKEY_LOCAL_MACHINE', 'HKLM')
+Run-Trusted -command "reg add `"$regPath`" /v `"ScalingConfig`" /t REG_BINARY /d `"DB02000010000000200100000E010000`" /f"
+}
+}
     }
     catch {
         Write-Host "An error occurred: $_" -ForegroundColor Red
