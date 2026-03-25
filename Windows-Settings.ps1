@@ -102,21 +102,40 @@ if ($answer -match '^[Yy]') {
         cmd /c "reg add `"HKLM\SYSTEM\ControlSet001\Services\nvlddmkm\Parameters\FTS`" /v `"EnableGR535`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
         cmd /c "reg add `"HKLM\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters\FTS`" /v `"EnableGR535`" /t REG_DWORD /d `"0`" /f >nul 2>&1"
 
-        # # turn on no scaling for all displays
-        # $configKeys = Get-ChildItem -Path "HKLM:\System\ControlSet001\Control\GraphicsDrivers\Configuration" -Recurse -ErrorAction SilentlyContinue
-        # foreach ($key in $configKeys) {
-        # $scalingValue = Get-ItemProperty -Path $key.PSPath -Name "Scaling" -ErrorAction SilentlyContinue
-        # if ($scalingValue) {
-        # $regPath = $key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::', '').Replace('HKEY_LOCAL_MACHINE', 'HKLM')
-        # Run-Trusted -command "reg add `"$regPath`" /v `"Scaling`" /t REG_DWORD /d `"2`" /f"
-        # }
-        foreach ($display in $displays) {
-            $regPath = $display.PSPath -replace 'Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE', 'HKLM:'
-
-            Set-ItemProperty -Path $regPath `
-                -Name "ScalingConfig" `
-                -Value ([byte[]](0xDB,0x02,0x00,0x00,0x10,0x00,0x00,0x00,0x20,0x01,0x00,0x00,0x0E,0x01,0x00,0x00)) `
-                -Type Binary
+        # FUNCTION RUN AS TRUSTED INSTALLER for the next setting
+        function Run-Trusted([String]$command) {
+        try {
+    	Stop-Service -Name TrustedInstaller -Force -ErrorAction Stop -WarningAction Stop
+  		}
+  		catch {
+    	taskkill /im trustedinstaller.exe /f >$null
+  		}
+        $service = Get-CimInstance -ClassName Win32_Service -Filter "Name='TrustedInstaller'"
+        $DefaultBinPath = $service.PathName
+  		$trustedInstallerPath = "$env:SystemRoot\servicing\TrustedInstaller.exe"
+  		if ($DefaultBinPath -ne $trustedInstallerPath) {
+    	$DefaultBinPath = $trustedInstallerPath
+  		}
+        $bytes = [System.Text.Encoding]::Unicode.GetBytes($command)
+        $base64Command = [Convert]::ToBase64String($bytes)
+        sc.exe config TrustedInstaller binPath= "cmd.exe /c powershell.exe -encodedcommand $base64Command" | Out-Null
+        sc.exe start TrustedInstaller | Out-Null
+        sc.exe config TrustedInstaller binpath= "`"$DefaultBinPath`"" | Out-Null
+        try {
+    	Stop-Service -Name TrustedInstaller -Force -ErrorAction Stop -WarningAction Stop
+  		}
+  		catch {
+    	taskkill /im trustedinstaller.exe /f >$null
+  		}
+        }
+        # turn on override the scaling mode set by games and programs for all displays
+        # perform scaling on display
+        $configKeys = Get-ChildItem -Path "HKLM:\System\ControlSet001\Control\GraphicsDrivers\Configuration" -Recurse -ErrorAction SilentlyContinue
+        foreach ($key in $configKeys) {
+        $scalingValue = Get-ItemProperty -Path $key.PSPath -Name "Scaling" -ErrorAction SilentlyContinue
+        if ($scalingValue) {
+        $regPath = $key.PSPath.Replace('Microsoft.PowerShell.Core\Registry::', '').Replace('HKEY_LOCAL_MACHINE', 'HKLM')
+        Run-Trusted -command "reg add `"$regPath`" /v `"Scaling`" /t REG_DWORD /d `"2`" /f"
         }
 }
 
