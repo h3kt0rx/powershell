@@ -19,7 +19,6 @@ Write-Host "Done." -ForegroundColor Green
 ############################################################################################################################################################
 <# NVIDIA Profile #>
 ############################################################################################################################################################
-# Ask for confirmation
 $answer = Read-Host "Do you want to execute the NVIDIA Profile setup script? [Y/N]"
 
 if ($answer -match '^[Yy]') {
@@ -68,56 +67,68 @@ if ($answer -match '^[Yy]') {
 else {
     Write-Host "Operation cancelled by user." -ForegroundColor DarkGray
 }
-
-
-###OLD
-# Write-Host "Setting NVIDIA Profile" -ForegroundColor Cyan
-# # Define URLs
-# $zipUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/nvidiaProfileInspector.zip"
-# $configUrl = "https://github.com/h3kt0rx/powershell/raw/refs/heads/main/cfg/custom.nip"
-# # Define temporary paths
-# $tempDir = "$env:TEMP\nvidiaProfileInspector"
-# $zipPath = "$tempDir\nvidiaProfileInspector.zip"
-# $extractPath = "$tempDir\nvidiaProfileInspector"
-# # Create the directory and suppress output
-# New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
-# # Download the ZIP file and suppress output
-# Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath | Out-Null
-# # Extract the ZIP file and suppress output
-# Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force | Out-Null
-# # Download the configuration file and suppress output
-# Invoke-WebRequest -Uri $configUrl -OutFile "$extractPath\custom.nip" | Out-Null
-# # Run the command to import the profile silently
-# $process = Start-Process -FilePath $extractPath\nvidiaProfileInspector.exe -ArgumentList "-silentImport `"$extractPath\custom.nip`"" -PassThru
-# # Wait for the process to exit
-# $process.WaitForExit()
-# # Clean up
-# Remove-Item -Recurse -Force -Path $tempDir
-# Write-Host "Done." -ForegroundColor Green
 ############################################################################################################################################################
 <# Script to Disable Core Isolation and Enable Game Mode #>
 ############################################################################################################################################################
-Write-Host "Enabling Game Mode and Disabling Core Isolation" -ForegroundColor Cyan
+$confirm1 = Read-Host "Do you want to enable Game Mode and disable Core Isolation? (Y/N)"
+if ($confirm1 -match '^[Yy]$') {
+    Write-Host "Enabling Game Mode and Disabling Core Isolation" -ForegroundColor Cyan
 
-# Enable Game Mode using reg add
-reg add "HKCU\SOFTWARE\Microsoft\GameBar" /v AutoGameModeEnabled /t REG_DWORD /d 1 /f
-reg add "HKCU\SOFTWARE\Microsoft\GameBar" /v UseGameMode /t REG_DWORD /d 1 /f
+    # Enable Game Mode using reg add
+    reg add "HKCU\SOFTWARE\Microsoft\GameBar" /v AutoGameModeEnabled /t REG_DWORD /d 1 /f
+    reg add "HKCU\SOFTWARE\Microsoft\GameBar" /v UseGameMode /t REG_DWORD /d 1 /f
 
-# Disable Core Isolation Memory Integrity using reg add
-reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 0 /f
+    # Disable Core Isolation Memory Integrity using reg add
+    reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 0 /f
 
-Write-Host "Done." -ForegroundColor Green
+    Write-Host "Done." -ForegroundColor Green
+} else {
+    Write-Host "Skipped Game Mode / Core Isolation changes." -ForegroundColor Yellow
+}
 ############################################################################################################################################################
 <# Run O&O ShutUp #>
 ############################################################################################################################################################
-Write-Host "Running O&O ShutUp" -ForegroundColor Cyan
-$OOSU_filepath = "$ENV:temp\OOSU10.exe"
-$oosu_config = "$ENV:temp\ooshutup10.cfg"
-Invoke-WebRequest -Uri "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -OutFile $OOSU_filepath
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/ooshutup10.cfg" -OutFile $oosu_config
-Write-Host "Applying personal O&O Shutup 10 Policies"
-Start-Process $OOSU_filepath -ArgumentList "$oosu_config /quiet" -Wait
-Write-Host "Done." -ForegroundColor Green
+$confirm2 = Read-Host "Do you want to download and run O&O ShutUp 10? (Y/N)"
+if ($confirm2 -match '^[Yy]$') {
+    Write-Host "Running O&O ShutUp" -ForegroundColor Cyan
+
+    $OOSU_filepath = "$ENV:temp\OOSU10.exe"
+    $oosu_config = "$ENV:temp\ooshutup10.cfg"
+
+    Invoke-WebRequest -Uri "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -OutFile $OOSU_filepath
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/ooshutup10.cfg" -OutFile $oosu_config
+
+    Write-Host "Applying personal O&O Shutup 10 Policies"
+    Start-Process $OOSU_filepath -ArgumentList "$oosu_config /quiet" -Wait
+
+    Write-Host "Done." -ForegroundColor Green
+} else {
+    Write-Host "Skipped O&O ShutUp." -ForegroundColor Yellow
+}
+# ############################################################################################################################################################
+# <# Script to Disable Core Isolation and Enable Game Mode #>
+# ############################################################################################################################################################
+# Write-Host "Enabling Game Mode and Disabling Core Isolation" -ForegroundColor Cyan
+
+# # Enable Game Mode using reg add
+# reg add "HKCU\SOFTWARE\Microsoft\GameBar" /v AutoGameModeEnabled /t REG_DWORD /d 1 /f
+# reg add "HKCU\SOFTWARE\Microsoft\GameBar" /v UseGameMode /t REG_DWORD /d 1 /f
+
+# # Disable Core Isolation Memory Integrity using reg add
+# reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeviceGuard" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 0 /f
+
+# Write-Host "Done." -ForegroundColor Green
+# ############################################################################################################################################################
+# <# Run O&O ShutUp #>
+# ############################################################################################################################################################
+# Write-Host "Running O&O ShutUp" -ForegroundColor Cyan
+# $OOSU_filepath = "$ENV:temp\OOSU10.exe"
+# $oosu_config = "$ENV:temp\ooshutup10.cfg"
+# Invoke-WebRequest -Uri "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -OutFile $OOSU_filepath
+# Invoke-WebRequest -Uri "https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/ooshutup10.cfg" -OutFile $oosu_config
+# Write-Host "Applying personal O&O Shutup 10 Policies"
+# Start-Process $OOSU_filepath -ArgumentList "$oosu_config /quiet" -Wait
+# Write-Host "Done." -ForegroundColor Green
 
 #---------------------------
 # FASTER SHUTDOWN TWEAKS
