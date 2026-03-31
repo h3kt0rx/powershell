@@ -15,5 +15,3 @@ MAS
 ```
 irm https://get.activated.win | iex
 ```
-rqrgpdtta4huldq8qd46z8mde9pzj9
-x89jmcotz6bhuosruep210gik87d1f
