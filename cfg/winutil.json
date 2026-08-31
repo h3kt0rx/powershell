@@ -1,85 +1,38 @@
-{
-    "WPFTweaks":  [
-                      "WPFTweaksEndTaskOnTaskbar",
-                      "WPFTweaksDisplay",
-                      "WPFTweaksDisableLMS1",
-                      "WPFTweaksRemoveHome",
-                      "WPFTweaksDebloatAdobe",
-                      "WPFTweaksTeredo",
-                      "WPFTweaksPowershell7Tele",
-                      "WPFTweaksAH",
-                      "WPFTweaksServices",
-                      "WPFTweaksConsumerFeatures",
-                      "WPFTweaksRemoveCopilot",
-                      "WPFTweaksDisableipsix",
-                      "WPFTweaksEdgeDebloat",
-                      "WPFTweaksWifi",
-                      "WPFTweaksDeleteTempFiles",
-                      "WPFTweaksTele",
-                      "WPFTweaksDisableBGapps",
-                      "WPFTweaksHiber",
-                      "WPFTweaksHome",
-                      "WPFTweaksRemoveGallery",
-                      "WPFTweaksRemoveOnedrive",
-                      "WPFTweaksRightClickMenu",
-                      "WPFTweaksIPv46",
-                      "WPFTweaksRazerBlock",
-                      "WPFTweaksRecallOff",
-                      "WPFTweaksLoc",
-                      "WPFTweaksDVR",
-                      "WPFTweaksStorage",
-                      "WPFTweaksDisableExplorerAutoDiscovery"
-                  ],
-    "Install":  [
-                    {
-                        "winget":  "RustDesk.RustDesk",
-                        "choco":  "rustdesk.portable"
-                    },
-                    {
-                        "winget":  "7zip.7zip",
-                        "choco":  "7zip"
-                    },
-                    {
-                        "winget":  "Discord.Discord",
-                        "choco":  "discord"
-                    },
-                    {
-                        "winget":  "Valve.Steam",
-                        "choco":  "steam-client"
-                    },
-                    {
-                        "winget":  "Notepad++.Notepad++",
-                        "choco":  "notepadplusplus"
-                    },
-                    {
-                        "winget":  "VideoLAN.VLC",
-                        "choco":  "vlc"
-                    },
-                    {
-                        "winget":  "Wagnardsoft.DisplayDriverUninstaller",
-                        "choco":  "ddu"
-                    },
-                    {
-                        "winget":  "GlavSoft.TightVNC",
-                        "choco":  "TightVNC"
-                    },
-                    {
-                        "winget":  "Google.Chrome",
-                        "choco":  "googlechrome"
-                    }
-                ],
-    "WPFInstall":  [
-                       "WPFInstallrustdesk",
-                       "WPFInstall7zip",
-                       "WPFInstalldiscord",
-                       "WPFInstallsteam",
-                       "WPFInstallnotepadplus",
-                       "WPFInstallvlc",
-                       "WPFInstallddu",
-                       "WPFInstalltightvnc",
-                       "WPFInstallchrome"
-                   ],
-    "WPFFeature":  [
-                       "WPFFeaturenfs"
-                   ]
-}
+[
+    "WPFInstallmoonlight",
+    "WPFInstallnotepadplus",
+    "WPFInstalldiscord",
+    "WPFInstallchrome",
+    "WPFInstallddu",
+    "WPFInstall7zip",
+    "WPFInstallsteam",
+    "WPFTweaksRestorePoint",
+    "WPFTweaksActivity",
+    "WPFTweaksConsumerFeatures",
+    "WPFTweaksDisableExplorerAutoDiscovery",
+    "WPFTweaksWPBT",
+    "WPFTweaksLocation",
+    "WPFTweaksServices",
+    "WPFTweaksTelemetry",
+    "WPFTweaksDeliveryOptimization",
+    "WPFTweaksDeleteTempFiles",
+    "WPFTweaksEndTaskOnTaskbar",
+    "WPFTweaksDisableStoreSearch",
+    "WPFTweaksRevertStartMenu",
+    "WPFTweaksWidget",
+    "WPFTweaksRemoveOneDrive",
+    "WPFTweaksWindowsAI",
+    "WPFTweaksRightClickMenu",
+    "WPFTweaksBlockAdobeNet",
+    "WPFTweaksDisableBGapps",
+    "WPFTweaksDisableIPv6",
+    "WPFTweaksRemoveHomeAndGallery",
+    "WPFTweaksEdgeDebloat",
+    "WPFTweaksIPv46",
+    "WPFTweaksDisableLockscreen",
+    "WPFTweaksDisplay",
+    "WPFTweaksTeredo",
+    "WPFTweaksRazerBlock",
+    "WPFToggleNewOutlook",
+    "WPFToggleTaskbarAlignment"
+]

@@ -365,7 +365,7 @@ function Invoke-CTTWinUtil {
     Write-Host ""
 
     $command1 = 'iex "& { $(irm https://christitus.com/win) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"'
-    $command2 = "iwr -useb 'https://christitus.com/win' | iex"
+    $command2 = "iwr -useb 'https://christitus.com/windev' | iex"
 
     $choice = Read-Host "Choice"
 
