@@ -278,11 +278,11 @@ function Invoke-QuickAccessTweaks {
                     -ErrorAction SilentlyContinue
     }
 
-    if (Test-Path -LiteralPath $CustomDestinations) {
-        Remove-Item -Path (Join-Path $CustomDestinations "*") `
-                    -Force `
-                    -ErrorAction SilentlyContinue
-    }
+    # if (Test-Path -LiteralPath $CustomDestinations) {
+    #     Remove-Item -Path (Join-Path $CustomDestinations "*") `
+    #                 -Force `
+    #                 -ErrorAction SilentlyContinue
+    # }
 
     Write-Host "Done." -ForegroundColor Green
 }
