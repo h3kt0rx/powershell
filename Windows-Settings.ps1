@@ -41,6 +41,7 @@ function Show-Menu {
     Write-Host "  4  " -NoNewline -ForegroundColor Yellow; Write-Host "CTT WinUtil"
     Write-Host "  5  " -NoNewline -ForegroundColor Yellow; Write-Host "Run ALL"
     Write-Host "  6  " -NoNewline -ForegroundColor Yellow; Write-Host "Microsoft Activation Scripts (MAS)"
+    Write-Host "  7  " -NoNewline -ForegroundColor Yellow; Write-Host "Windows LTSC Fixes  " -NoNewline; Write-Host "(Store Reset, App Installer, Gaming Services Repair)" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  X  " -NoNewline -ForegroundColor Red;    Write-Host "Exit"
     Write-Host ""
@@ -384,6 +385,81 @@ function Invoke-CTTWinUtil {
     }
 }
 
+function Invoke-LTSCFixes {
+    Write-Host ""
+    Write-Host "Running Windows LTSC Fixes..." -ForegroundColor Cyan
+
+    # 1. Reset the Microsoft Store (also reinstalls preinstalled apps via -i)
+    Write-Host ""
+    Write-Host "Resetting Microsoft Store (wsreset -i)..." -ForegroundColor Yellow
+    try {
+        Start-Process -FilePath "$env:SystemRoot\System32\wsreset.exe" -ArgumentList "-i" -Wait -NoNewWindow -ErrorAction Stop
+        Write-Host "Microsoft Store reset complete." -ForegroundColor Green
+    } catch {
+        Write-Host "wsreset failed: $_" -ForegroundColor Red
+    }
+
+    # 2. Install / re-register App Installer (winget)
+    Write-Host ""
+    Write-Host "Installing App Installer (winget)..." -ForegroundColor Yellow
+    try {
+        $appInstaller = Get-AppxPackage -Name "Microsoft.DesktopAppInstaller" -ErrorAction SilentlyContinue
+
+        if ($appInstaller) {
+            Write-Host "App Installer already present, re-registering..." -ForegroundColor DarkGray
+            Add-AppxPackage -RegisterByFamilyName -MainPackage "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" -ErrorAction Stop
+        }
+        else {
+            $tempDir = "$env:TEMP\AppInstaller"
+            New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
+
+            Write-Host "Fetching latest App Installer package..." -ForegroundColor DarkGray
+            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-cli/releases/latest" -ErrorAction Stop
+            $asset   = $release.assets | Where-Object { $_.name -like "*.msixbundle" } | Select-Object -First 1
+
+            if (-not $asset) { throw "Could not locate an .msixbundle asset in the latest winget-cli release." }
+
+            $bundlePath = Join-Path $tempDir $asset.name
+            Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $bundlePath -ErrorAction Stop
+
+            Add-AppxPackage -Path $bundlePath -ErrorAction Stop
+            Remove-Item -Recurse -Force -Path $tempDir -ErrorAction SilentlyContinue
+        }
+
+        Write-Host "App Installer ready." -ForegroundColor Green
+    } catch {
+        Write-Host "App Installer install failed: $_" -ForegroundColor Red
+    }
+
+    # 3. Gaming Services Repair Tool
+    Write-Host ""
+    Write-Host "Running Gaming Services Repair Tool..." -ForegroundColor Yellow
+    try {
+        if (Get-Command winget -ErrorAction SilentlyContinue) {
+            # Preferred path: winget's package for this tool honors --silent,
+            # unlike the standalone GamingRepairTool.exe which has no documented
+            # silent switch and will otherwise show its own UI.
+            winget install --id Microsoft.Gaming.GamingServicesRepairTool -e `
+                            --silent --accept-package-agreements --accept-source-agreements
+        }
+        else {
+            Write-Host "winget not found, falling back to the standalone tool from aka.ms/GamingRepairTool." -ForegroundColor DarkGray
+            Write-Host "Note: this build has no documented silent switch, so its own UI may still appear." -ForegroundColor DarkGray
+
+            $toolPath = "$env:TEMP\GamingRepairTool.exe"
+            Invoke-WebRequest -Uri "https://aka.ms/GamingRepairTool" -OutFile $toolPath -ErrorAction Stop
+            Start-Process -FilePath $toolPath -Wait -ErrorAction Stop
+        }
+
+        Write-Host "Gaming Services Repair Tool finished." -ForegroundColor Green
+    } catch {
+        Write-Host "Gaming Services Repair Tool failed: $_" -ForegroundColor Red
+    }
+
+    Write-Host ""
+    Write-Host "LTSC Fixes complete." -ForegroundColor Green
+}
+
 #endregion
 
 #region ── Main Loop ────────────────────────────────────────────────────────────
@@ -420,6 +496,10 @@ do {
             Write-Host "Launching Microsoft Activation Scripts (MAS)" -ForegroundColor Cyan
             irm https://get.activated.win | iex
             Write-Host "Done." -ForegroundColor Green
+            Pause-Menu
+        }
+        '7' {
+            Invoke-LTSCFixes
             Pause-Menu
         }
         'X' {
