@@ -100,7 +100,7 @@ function Invoke-NvidiaProfile {
         Write-Host "Cleaning up..." -ForegroundColor Yellow
         Remove-Item -Recurse -Force -Path $tempDir
 
-        Write-Host "Applying fr33thy registry settings..." -ForegroundColor Green
+        Write-Host "Applying Nvidia registry settings..." -ForegroundColor Green
 
         $nvidiaClass = "Registry::HKLM\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
 
