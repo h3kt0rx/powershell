@@ -53,7 +53,7 @@ function Export-Migration {
     if (-not $base) { Write-Warning 'No folder selected. Cancelled.'; return }
 
     $stamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
-    $root  = Join-Path $base "PrinterWiFi\Migration_$stamp"
+    $root  = Join-Path $base "Printers_and_WiFi\Migration_$stamp"
     $pDir  = Join-Path $root 'Printers'
     $wDir  = Join-Path $root 'WiFi'
     New-Item -ItemType Directory -Path $pDir, $wDir -Force | Out-Null
