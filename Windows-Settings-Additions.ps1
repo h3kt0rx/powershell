@@ -35,13 +35,12 @@ function Show-Menu {
     Write-Host "         Windows Settings Menu            " -ForegroundColor Cyan
     Write-Host "==========================================" -ForegroundColor DarkCyan
     Write-Host ""
-    Write-Host "  1  " -NoNewline -ForegroundColor Yellow; Write-Host "Windows Tweaks  " -NoNewline; Write-Host "(UAC, Game Mode, Shutdown, Mouse, Explorer)" -ForegroundColor DarkGray
-    Write-Host "  2  " -NoNewline -ForegroundColor Yellow; Write-Host "NVIDIA Profile Setup"
-    Write-Host "  3  " -NoNewline -ForegroundColor Yellow; Write-Host "O&O ShutUp 10"
-    Write-Host "  4  " -NoNewline -ForegroundColor Yellow; Write-Host "CTT WinUtil"
-    Write-Host "  5  " -NoNewline -ForegroundColor Yellow; Write-Host "Run ALL"
+    Write-Host "  1  " -NoNewline -ForegroundColor Yellow; Write-Host "Run ALL (2-6) and Automated CTT"
+    Write-Host "  2  " -NoNewline -ForegroundColor Yellow; Write-Host "Windows 11/LTSC Tweaks and Fixes"
+    Write-Host "  3  " -NoNewline -ForegroundColor Yellow; Write-Host "NVIDIA Profile Setup"
+    Write-Host "  4  " -NoNewline -ForegroundColor Yellow; Write-Host "O&O ShutUp 10"
+    Write-Host "  5  " -NoNewline -ForegroundColor Yellow; Write-Host "CTT WinUtil Options"
     Write-Host "  6  " -NoNewline -ForegroundColor Yellow; Write-Host "Microsoft Activation Scripts (MAS)"
-    Write-Host "  7  " -NoNewline -ForegroundColor Yellow; Write-Host "Windows LTSC Fixes  " -NoNewline; Write-Host "(Store Reset, App Installer, Gaming Services Repair)" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  X  " -NoNewline -ForegroundColor Red;    Write-Host "Exit"
     Write-Host ""
@@ -353,6 +352,7 @@ function Invoke-WindowsTweaks {
     Invoke-MouseTweaks
     Invoke-QuickAccessTweaks
     Invoke-FileDeleteTweaks
+    Invoke-LTSCFixes
     Restart-Explorer
 }
 
@@ -815,28 +815,64 @@ function Invoke-LTSCFixes {
 do {
     Show-Menu
     $selection = Read-Host "Enter option"
+    $command1 = 'iex "& { $(irm https://christitus.com/win) } -Config https://raw.githubusercontent.com/h3kt0rx/powershell/refs/heads/main/cfg/winutil.json -Run"'
 
     switch ($selection.ToUpper()) {
         '1' {
-            Invoke-WindowsTweaks
+            Write-Host ""
+            Write-Host "[1/7] Windows 11/LTSC Tweaks and Fixes" -ForegroundColor Cyan
+            try { Invoke-WindowsTweaks }
+            catch { Write-Host "Windows 11/LTSC Tweaks and Fixes failed: $_" -ForegroundColor Red }
+
+            Write-Host ""
+            Write-Host "[2/7] NVIDIA Profile Setup" -ForegroundColor Cyan
+            try { Invoke-NvidiaProfile }
+            catch { Write-Host "NVIDIA Profile Setup failed: $_" -ForegroundColor Red }
+
+            Write-Host ""
+            Write-Host "[3/7] O&O ShutUp 10" -ForegroundColor Cyan
+            try { Invoke-OOShutUp }
+            catch { Write-Host "O&O ShutUp 10 failed: $_" -ForegroundColor Red }
+
+            Write-Host ""
+            Write-Host "[4/7] WinGet - Reinstall" -ForegroundColor Cyan
+            try { Invoke-WPFFixesWinget }
+            catch { Write-Host "WinGet reinstall failed: $_" -ForegroundColor Red }
+
+            # Step 2/4: Windows Update - Recommended Profile
+            Write-Host ""
+            Write-Host "[5/7] Windows Update - Recommended Profile" -ForegroundColor Cyan
+            try { Invoke-WPFUpdatessecurity }
+            catch { Write-Host "Windows Update profile failed: $_" -ForegroundColor Red }
+
+            # Step 3/4: Ultimate Performance Profile - Enable
+            Write-Host ""
+            Write-Host "[6/7] Ultimate Performance Profile - Enable" -ForegroundColor Cyan
+            try { Invoke-WPFUltimatePerformance -State "Enable" }
+            catch { Write-Host "Ultimate Performance enable failed: $_" -ForegroundColor Red }
+
+            # Refresh PATH so the new window can see a freshly repaired winget
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+            # Step 4/4: your WinUtil config
+            Write-Host ""
+            Write-Host "[7/7] Opening new PowerShell window for Automated Custom Config..." -ForegroundColor Green
+            Start-Process powershell -ArgumentList "-NoExit", "-Command", $command1
             Pause-Menu
         }
         '2' {
-            Invoke-NvidiaProfile
+            Invoke-WindowsTweaks
             Pause-Menu
         }
         '3' {
-            Invoke-OOShutUp
+            Invoke-NvidiaProfile
             Pause-Menu
         }
         '4' {
-            Invoke-CTTWinUtil
+            Invoke-OOShutUp
             Pause-Menu
         }
         '5' {
-            Invoke-WindowsTweaks
-            Invoke-NvidiaProfile
-            Invoke-OOShutUp
             Invoke-CTTWinUtil
             Pause-Menu
         }
@@ -844,10 +880,6 @@ do {
             Write-Host "Launching Microsoft Activation Scripts (MAS)" -ForegroundColor Cyan
             irm https://get.activated.win | iex
             Write-Host "Done." -ForegroundColor Green
-            Pause-Menu
-        }
-        '7' {
-            Invoke-LTSCFixes
             Pause-Menu
         }
         'X' {
